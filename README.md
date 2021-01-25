@@ -20,6 +20,8 @@ help(package="antaresAdequacyPatch")
 
 ## Notice d'utilisation
 
+Attention, pour que ce package fonctionne vous devez au préalable installer AMPL et Xpress sur votre ordinateur.
+
 
 ### L'utilisation de la fonction `run_adq`
 
