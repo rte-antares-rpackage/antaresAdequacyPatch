@@ -1,0 +1,69 @@
+
+# reset;
+# option solver amplxpress;
+# model lin_adq_patch.mod;
+
+# data;
+# param: FB_zones_CB_countries: 	PTDF  := include 'FB_zones_CB_countries.txt';
+# param: FB_zones_CB:				capacity := include 'FB_zones_CB.txt';
+# param: all_countries: 			DENS D_available_energy global_net_position_init := include 'all_countries.txt';
+
+# model;
+
+option xpress_options 'outlev=1 dual threads=1';
+# display FB_zones_CB_countries;
+# display FB_zones_CB;
+# display all_countries;
+
+# let{country in all_countries_LOLD} LB_1[country] := y_1[country].lb2;
+# let{country in all_countries_LOLD} UB_1[country] := y_1[country].ub2;
+
+# let{country in all_countries} LB_2[country] := y_2[country].lb2;
+# let{country in all_countries} UB_2[country] := y_2[country].ub2;
+
+# display LB_1, UB_1;
+# display LB_2, UB_2;
+# option presolve 10;
+
+# let LP_1 := union{country in all_countries_LOLD }({(country, LB_1[country])} union {(country, UB_1[country])});
+# let LP_2 := union{country in all_countries      }({(country, LB_2[country])} union {(country, UB_2[country])});
+
+let LP_1 := {};
+let LP_2 := {};
+
+repeat {
+    solve curtailment_sharing_lin>trash.log;
+
+    let{country in all_countries_LOLD}  W_1[country] := w_1[country];
+    let{country in all_countries_LOLD}  Y_1[country] := y_1[country]; 
+
+    let{country in all_countries}       W_2[country] := w_2[country];
+    let{country in all_countries}       Y_2[country] := y_2[country]; 
+
+    display MAX_ERROR_1, MAX_ERROR_2;   
+    display curtailment_sharing_lin;
+    display curtailment_sharing;
+
+    let LP_1 := LP_1 union union{country in all_countries_LOLD: ERROR_1[country]>=EPS_LIN}{(country, Y_1[country])};
+    let LP_2 := LP_2 union union{country in all_countries     : ERROR_2[country]>=EPS_LIN}{(country, Y_2[country])};
+
+} while MAX_ERROR_1>=EPS_LIN or MAX_ERROR_2>=EPS_LIN;
+# display y_1;
+# display y_2;
+
+# display curtailment_sharing;
+
+# option xpress_options 'outlev=1 barrier threads=1';
+# solve curtailment_sharing;
+
+# display curtailment_sharing;
+# display y_1;
+# display y_2;
+
+# let{country in all_countries_LOLD}  W_1[country] := y_1[country]^2;
+# let{country in all_countries_LOLD}  Y_1[country] := y_1[country]; 
+
+# let{country in all_countries}       W_2[country] := y_2[country]^2;
+# let{country in all_countries}       Y_2[country] := y_2[country]; 
+
+# display {i in 1.._ncons:_con[i].slack<-1e-4}_conname[i];

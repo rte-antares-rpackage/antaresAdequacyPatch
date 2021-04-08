@@ -1,3 +1,9 @@
+
+
+no_handler = function(s){
+
+}
+
 #' Applies the Adequacy patch on given DENS and DMRG for countries and
 #' constrained by the flow_based and NTC data.
 #'
@@ -71,17 +77,17 @@ adq_patch = function(patch_data, ts_FB_data,
 	cb_id = merge(ptdf_data, zones_id, by = "ptdf.zone")[, .(zone.id = zone.id[[1]], cb.id = .GRP), by=ptdf.CB]
 
 	countries_id = ptdf_data[, .(country.id = .GRP), by=ptdf.country]
-
-
+	
 	# Sets up AMPL
 	ampl = new(rAMPL::AMPL)
 
-	ampl$setOption("solver_msg", -1)
+	ampl$setOption("solver_msg", 1)
 
 	ampl$setOption("solver", "amplxpress")
+	ampl$setOption("xpress_options", "outlev=1")
 	ampl$setOption("presolve", 1)
 
-	ampl$read(system.file("ampl/adq_patch.mod", package = "AdequacyPatch"))
+	ampl$read(system.file("ampl/lin_adq_patch.mod", package = "AdequacyPatch"))
 
 
 	# Sends data to AMPL sets
@@ -302,8 +308,11 @@ adq_patch = function(patch_data, ts_FB_data,
 	ampl$setData(patch, 1, "")
 	ampl$setData(capacity, 2, "")
 
-	ampl$solve()
+	# ampl$setOutputHandler(no_handler)
 
+	# ampl$solve()
+	ampl$read(system.file("ampl/lin_adq_patch.run", package = "AdequacyPatch"))
+	
 	# View(ampl$getData("
 	# 	{zone in FB_zones, country in countries[zone]} (
 	# 		net_position[zone, country]
