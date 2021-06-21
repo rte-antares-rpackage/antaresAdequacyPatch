@@ -221,7 +221,6 @@ def solve_single_time_step(zones_id, cb_id, country_id, grouped_patch, ptdf, cap
   links_index = pd.MultiIndex.from_tuples(links_values.keys(), names=("zone", "country"))
   links = pd.DataFrame({"net_position.zone.country.": pd.Series(links_values, index=links_index)})
   output = links.join(areas)
-  logger.info(output)
   return output
 
 def update_parameters(w_1, y_1, w_2, y_2, iteration, all_countries_LOLD, all_countries):
