@@ -201,14 +201,12 @@ run_adq <- function(opts, areas,
 	if(parallel){
 		stopCluster(cl)
 	}
-
-
-
+  
 	computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
 
 	##Write mc all
 	cat("Write mc all")
-	parAggregateMCall(opts, nbcl)
+	parAggregateMCall(opts, 1)
 	.add_csv_digest(opts)
 
 }
@@ -277,9 +275,12 @@ adq_write <- function(sim_opts,
 
 
 		.write_adq_area(sim_opts, areas_data, output, links_data, unique(output$areas$area))
-
-		links_data$from <- NULL
-		links_data$to <- NULL
+    # if ("from" %in% names(links_data)){
+    links_data$from <- NULL
+    # }
+    # if ("to" %in% names(links_data)){
+    links_data$to <- NULL
+    # }
 		links_data <- links_data[link%in%unique(output$links$link)]
 		.write_adq_link(sim_opts, links_data, output)
 

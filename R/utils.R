@@ -12,7 +12,7 @@
 #' @noRd
 .transformOutput <- function(out, antaresfbzone){
 	out[, c("patch.Supply", "patch.Load", "patch.net_position", "patch.ENS",
-			"patch.MRG", "patch.DENS", "patch.DMRG", "patch.Date"):=NULL]
+			"patch.MRG", "patch.DENS", "patch.Date"):=NULL]
 	setnames(out, "post_patch.MRG", "SPIL. ENRG")
 	setnames(out, "post_patch.ENS", "UNSP. ENRG")
 	setnames(out, "post_patch.net_position", "BALANCE")

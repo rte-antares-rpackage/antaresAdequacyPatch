@@ -154,11 +154,8 @@ adq_patch = function(patch_data, ts_FB_data,
     )
   ]
   
-  # Setting up python script for or-tools use
-  library(reticulate)
-  source_python("Python/adq_patch_python.py")
-  
   # Short work on sets before handing them to python
+  # Just passing the data needed
   zones = zones_id[, zone.id]
   cbs = cb_id[, c("zone.id", "cb.id")]
   countries = merge(zones_id, merge(countries_id,
@@ -167,44 +164,35 @@ adq_patch = function(patch_data, ts_FB_data,
   
   
   # Time-step by time-step resolution
-  output = patch[
-    ,
-    solve_single_time_step(zones, cbs, countries, .SD, ptdf,
-                           rbind(
-                             capacity_FB[  # For each CB, selects the right capacity depending on typical day and hour
-                               capacity.typical_day ==
-                                 ts_FB_data[
-                                   ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.Date,
-                                   ts.typical_day
-                                 ]
-                               
-                               & capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
-                               .(
-                                 zone.id, cb.id,
-                                 capacity
-                               )
-                             ],
-                             capacity_NTC[
-                               capacity.timeId == patch.timeId,
-                               .(
-                                 zone.id, cb.id,
-                                 capacity
-                               )
-                             ]
-                           )),
-    by=.(patch.mcYear, patch.Date, patch.timeId)
+  output = patch[,
+                 .single_time_step(patch.mcYear, patch.Date, patch.timeId, 
+                                   zones, cbs, countries, .SD, ptdf,
+                                   rbind(
+                                     capacity_FB[  # For each CB, selects the right capacity depending on typical day and hour
+                                       capacity.typical_day ==
+                                         ts_FB_data[
+                                           ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.Date,
+                                           ts.typical_day
+                                         ]
+                                       
+                                       & capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
+                                       .(
+                                         zone.id, cb.id,
+                                         capacity
+                                       )
+                                     ],
+                                     capacity_NTC[
+                                       capacity.timeId == patch.timeId,
+                                       .(
+                                         zone.id, cb.id,
+                                         capacity
+                                       )
+                                     ]
+                                   )
+                 ),
+                 by=.(patch.mcYear, patch.Date, patch.timeId)
   ]
   
-  # Replaces countries ids by names
-  # output = merge(countries_id, output, by.x="country.id", by.y="index0")[
-  # 	,
-  # 	.(
-  # 		patch.mcYear, patch.timeId, patch.Date, patch.area = ptdf.country,
-  # 		post_patch.MRG = round(MRG.country., digits=0),
-  # 		post_patch.ENS = round(ENS.country., digits=0),
-  # 		post_patch.net_pos = round(net_pos.country., digits=0)
-  # 	)
-  # ]
   output = merge(countries_id, output, by.x="country.id", by.y="index0")[
     ,
     c(
@@ -267,47 +255,35 @@ adq_patch = function(patch_data, ts_FB_data,
 }
 
 
-#' Calls the AMPL Adequacy patch at each time-step
+#' Calls the python Adequacy patch at each time-step
 #'
-#' @param ampl (rAMPL::AMPL) AMPL object, with model and PTDF already loaded
-#' @param patch (data.table) Relevant data form the simulation for this time-step
+#' @param mcYear (numeric) Monte Carlo year, for logging purposes
+#' @param Date (character) Date, for logging purposes
+#' @param timeId (numeric) timeId, for logging purposes
+#' @param zones (list) zones as a list of integers
+#' @param cbs (data.table) critical branches, a data.table containing a column for the zone and a column for the cb id
+#' @param countries (data.table) countries, a data.table containing a column for the zone and a column for the country id
+#' @param grouped_patch (data.table) The patch data.table grouped by mcYear, Date & timeId
+#' @param ptdf (data.table) the ptdf coefficients of the network
 #' @param capacity (data.table) Limit capacity on each CB, containing both flow-based
 #'	and NTC data
 #'
 #' @return (data.table) Table giving the MRG, ENS and net-position for each country
 #'	at this time-step
 #' @export
-.single_time_step = function(ampl, patch, capacity) {
-  
-  ampl$setData(patch, 1, "")
-  ampl$setData(capacity, 2, "")
-  
-  # ampl$setOutputHandler(no_handler)
-  
-  # ampl$solve()
-  ampl$read(system.file("ampl/lin_adq_patch.run", package = "AdequacyPatch"))
-  
-  # View(ampl$getData("
-  # 	{zone in FB_zones, country in countries[zone]} (
-  # 		net_position[zone, country]
-  # 	)
-  # "))
-  
-  areas = ampl$getData("
-		{country in all_countries} (
-			ENS[country],
-			MRG[country],
-			global_net_position[country]
-		)
-	")
-  
-  links = ampl$getData("
-		{zone in FB_zones, country in countries[zone]} (
-			net_position[zone, country]
-		)
-	")
+.single_time_step = function(mcYear, Date, timeId, zones, cbs, countries,
+                             grouped_patch, ptdf, capacity) {
+  # Setting up python script for or-tools use
+  library(reticulate)
+  source_python("Python/adq_patch_python.py")
+  python_output = solve_single_time_step(mcYear, Date, timeId, zones, cbs, countries, grouped_patch, ptdf, capacity)
+  # Turning the python pandas dataframes into R data.frames
+  areas = py_to_r(python_output$areas)
+  # Replacing pandas' NaNs by R NAs
+  areas[areas =="NaN"] <- NA_real_
+  links = py_to_r(python_output$links)
+  links[links =="NaN"] <- NA_real_
   
   links = data.table::dcast(data.table::setDT(links), index1 ~ index0, value.var="net_position.zone.country.")
-  
   merge(areas, links, by.x="index0", by.y="index1")
 }
