@@ -18,9 +18,24 @@ help(package="antaresAdequacyPatch")
 ```
 
 
-## Notice d'utilisation
+## OR-Tools requirements
 
-Attention, pour que ce package fonctionne vous devez au préalable installer AMPL et Xpress sur votre ordinateur.
+* You will need reticulate to run python code inside R:
+```
+install.packages("reticulate")
+```
+* You need a Python 3.7.1+
+* Then create a .Renviron file with the path to your python:
+  * If on Mac/Linux: create the $HOME/.Renviron file
+  * If on Windows: create the c:\Users\$env:USERNAME\Documents\.Renviron file
+inside the file, write:
+```
+RETICULATE_PYTHON="path-to-your-python/bin/python3"
+```
+* Install the pandas library on your python
+https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html
+* Install the ortools library on your python
+https://developers.google.com/optimization/install
 
 
 ### L'utilisation de la fonction `run_adq`

@@ -96,8 +96,7 @@ def solve_single_time_step(mcYear, Date, timeId, zones_id, cb_id, country_id, gr
     # Catch a failed optimization
     # And warn about it
     logger.warning("FAILED solving mcYear {} Date {} timeId {}".format(mcYear, Date, timeId))
-    return {"areas": pd.DataFrame(columns=["ENS.country.", "MRG.country.", "global_net_position.country.", "index0"]),
-            "links": pd.DataFrame(columns=["index0", "index1", "net_position.zone.country."])}
+    return None
   
   iteration = 1
   
@@ -113,8 +112,7 @@ def solve_single_time_step(mcYear, Date, timeId, zones_id, cb_id, country_id, gr
       problem, relaxation_stage, w_1, y_1, w_2, y_2 = build_and_solve(FB_zones, CB, countries, all_countries, all_countries_LOLD, grouped_patch, ptdf, capacity, linearization_parameters, relaxation_stage)
     except ValueError as e:
       logger.warning("FAILED solving mcYear {} Date {} timeId {}".format(mcYear, Date, timeId))
-      return {"areas": pd.DataFrame(columns=["ENS.country.", "MRG.country.", "global_net_position.country.", "index0"]),
-              "links": pd.DataFrame(columns=["index0", "index1", "net_position.zone.country."])}
+      return None
     iteration += 1
 
     # Update linearization parameters
