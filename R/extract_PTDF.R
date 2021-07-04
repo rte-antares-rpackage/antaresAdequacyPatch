@@ -15,7 +15,7 @@
 #'
 #' ptdf_FB_data = extract_FB_ptdf(sim_opts=sim_opts)
 #' }
-extract_FB_ptdf = function(sim_opts=antaresRead::simOptions()) {
+extract_FB_ptdf = function(sim_opts=antaresRead::simOptions(), patch_alegro = T) {
 	ptdf = data.table::fread(
 		paste(sim_opts$studyPath, "user/flowbased/weight.txt", sep="/")
 	)
@@ -47,6 +47,10 @@ extract_FB_ptdf = function(sim_opts=antaresRead::simOptions()) {
 
 	conversion = rbind(conversion, last_row)
 
+	if(patch_alegro){
+	  conversion[, alegro2 := NULL]
+	}
+	
 	# Adds a dummy column to match conversion and impose the PTDF of the last country
 	ptdf[, dummy := 0]
 
