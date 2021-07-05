@@ -47,7 +47,7 @@ extract_FB_ptdf = function(sim_opts=antaresRead::simOptions(), patch_alegro = T)
 
 	conversion = rbind(conversion, last_row)
 
-	if(patch_alegro){
+	if(patch_alegro & ("alegro2" %in% colnames(conversion))){
 	  conversion[, alegro2 := NULL]
 	}
 	
