@@ -54,7 +54,8 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
 			capacity_FB_data = capacity_FB_data,
 			capacity_NTC_data = links_NTC_data$capacity,
 			ptdf_FB_data = ptdf_FB_data,
-			ptdf_NTC_data = links_NTC_data$ptdf
+			ptdf_NTC_data = links_NTC_data$ptdf,
+			sim_opts = sim_opts
 		)
 
 	}else{

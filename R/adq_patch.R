@@ -41,7 +41,7 @@
 #' }
 adq_patch = function(patch_data, ts_FB_data,
 					 capacity_FB_data, capacity_NTC_data,
-					 ptdf_FB_data, ptdf_NTC_data) {
+					 ptdf_FB_data, ptdf_NTC_data, sim_opts) {
 
 	# Remove NTC links already in FB
 	used_link = function(link_name, FB_countries) {
@@ -52,11 +52,8 @@ adq_patch = function(patch_data, ts_FB_data,
 		from %in% FB_countries & to %in% FB_countries
 	}
 
-	FB_countries = unique(ptdf_FB_data[, ptdf.country])
-
-	ptdf_NTC_data = ptdf_NTC_data[
-		!(sapply(ptdf.zone, function(link_name){used_link(link_name, FB_countries)}))
-	]
+	FB_links <- getLinks(areas = "zz_flowbased", opts = sim_opts)
+	ptdf_NTC_data = ptdf_NTC_data[!ptdf.zone %in% FB_links]
 
 
 	# capacity_NTC_data = capacity_NTC_data[!(sapply(capacity.zone,

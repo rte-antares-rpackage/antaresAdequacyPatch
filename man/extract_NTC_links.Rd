@@ -4,7 +4,11 @@
 \alias{extract_NTC_links}
 \title{Extracts the NTC links data from a study and formats the like the flow-based data}
 \usage{
-extract_NTC_links(areas = NULL, sim_opts = antaresRead::simOptions())
+extract_NTC_links(
+  areas = NULL,
+  sim_opts = antaresRead::simOptions(),
+  set_capacity_one_to_infinite = T
+)
 }
 \arguments{
 \item{areas}{(string or vector of strings) Areas between which we want to

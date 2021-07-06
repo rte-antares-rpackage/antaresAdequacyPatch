@@ -11,7 +11,8 @@ adq_patch(
   capacity_FB_data,
   capacity_NTC_data,
   ptdf_FB_data,
-  ptdf_NTC_data
+  ptdf_NTC_data,
+  sim_opts
 )
 }
 \arguments{

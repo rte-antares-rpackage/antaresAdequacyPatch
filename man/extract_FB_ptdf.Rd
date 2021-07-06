@@ -7,7 +7,7 @@ country for the flow-based domain of a study.
 It also converts the initial PTDFs, given for each link in PTDFs fiven for
 each country.}
 \usage{
-extract_FB_ptdf(sim_opts = antaresRead::simOptions())
+extract_FB_ptdf(sim_opts = antaresRead::simOptions(), patch_alegro = T)
 }
 \arguments{
 \item{sim_opts}{(list) Simulation options as given by antaresRead::setSimulationPath}
