@@ -107,7 +107,8 @@ run_adq <- function(opts, areas,
 					nbcl = 10,
 					antaresfbzone = "model_description_fb",
 					showProgress = TRUE,
-					thresholdFilter = 1000000){
+					thresholdFilter = 1000000,
+					core_ahc = F){
 
 
 
@@ -146,7 +147,11 @@ run_adq <- function(opts, areas,
 	cat("Import NTC \n")
 	links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
 	cat("Import PTDF \n")
-	ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
+	if(core_ahc){
+	  ptdf_FB_data = extract_ptdf_core(sim_opts=opts)
+	} else {
+	  ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
+	}
 	cat("Import FB capacity \n")
 	capacity_FB_data = extract_FB_capacity(sim_opts=opts)
 	cat("Import FB time series \n")
