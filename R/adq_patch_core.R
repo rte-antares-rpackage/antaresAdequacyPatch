@@ -86,7 +86,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	ampl$getSet("FB_zones")$setValues(zones_id[, zone.id])
 
 	CB_set = ampl$getSet("CB")
-	cb_id[, CB_set$get(zone.id)$setValues(.SD[, cb.id]), by=zone.id]
+	cb_id[, CB_set$get(zone.id)$setValues(.SD[, cb.id])]
 
 	countries_set = ampl$getSet("countries")
 	merge(zones_id, merge(countries_id,
@@ -155,7 +155,7 @@ adq_patch = function(patch_data, ts_FB_data,
 		,
 		.(
 			capacity.timeId,
-			zone.id, cb.id,  # AMPL sets : FB_zones, CB[zone]
+			cb.id,  # AMPL sets : FB_zones, CB[zone]
 			capacity = capacity.capacity  # AMPL parameter : capacity
 		)
 	]
@@ -182,7 +182,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	# Time-step by time-step resolution
 	output = patch[
 		,
-		.single_time_step(
+		.single_time_step_core(
 			ampl,
 			.SD,
 			rbind(
@@ -195,14 +195,14 @@ adq_patch = function(patch_data, ts_FB_data,
 
 					& capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
 					.(
-						zone.id, cb.id,
+						cb.id,
 						capacity
 					)
 				],
 				capacity_NTC[
 					capacity.timeId == patch.timeId,
 					.(
-						zone.id, cb.id,
+						cb.id,
 						capacity
 					)
 				]
@@ -296,10 +296,10 @@ adq_patch = function(patch_data, ts_FB_data,
 #' @return (data.table) Table giving the MRG, ENS and net-position for each country
 #'	at this time-step
 #' @export
-.single_time_step = function(ampl, patch, capacity) {
+.single_time_step_core = function(ampl, patch, capacity) {
 
 	ampl$setData(patch, 1, "")
-	ampl$setData(capacity, 2, "")
+	ampl$setData(capacity, 1, "") # A MODIFIER ?
 
 	ampl$solve()
 

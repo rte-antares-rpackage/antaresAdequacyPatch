@@ -7,14 +7,14 @@ set countries{FB_zones};
 set all_countries := union{zone in FB_zones} countries[zone];
 
 # Critical branches in each zone
-set CB;
+set CB{FB_zones};
 
 
 ### Parameters
 # Power Transmission and Distribution Flows, for each CB
-param PTDF{zone in FB_zones, CB, countries[zone]} default 0;
+param PTDF{zone in FB_zones, CB[zone], countries[zone]} default 0;
 # Capacity of each critical branch
-param capacity{zone in FB_zones, CB} >= 0 default 0;
+param capacity{zone in FB_zones, CB[zone]} >= 0 default 0;
 
 # Pre-patch values (D = Domestic, without trades)
 param DENS{all_countries} >= 0;
@@ -62,7 +62,7 @@ subject to energy_conservation{zone in FB_zones}:
 	sum{country in countries[zone]} net_position[zone, country] == 0;
 	
 # No overload on a critical branch in each zone
-subject to flow_based{zone in FB_zones, cb in CB}:
+subject to flow_based{zone in FB_zones, cb in CB[zone]}:
 	sum{country in countries[zone]} PTDF[zone, cb, country] * net_position[zone, country] <= capacity[zone, cb] + 1;
 
 # Don't export if in LOL
