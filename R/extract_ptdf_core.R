@@ -15,8 +15,8 @@ extract_ptdf_core <- function(sim_opts=antaresRead::simOptions()){
     sorted <- sort(strsplit(X, " - ")[[1]])
     paste0(sorted[1], " - ", sorted[2])
   })]
-  ptdf_flat[, zone_changed := (zone != zone_raw)]
-  ptdf_flat[zone_changed == TRUE, PTDF := -PTDF]
+  # ptdf_flat[, zone_changed := (zone != zone_raw)]
+  # ptdf_flat[zone_changed == TRUE, PTDF := -PTDF]
 
   ptdf_flat[grepl("zz_flowbased", zone), zone := "CWE"]
   ptdf_flat <- ptdf_flat[, .SD, .SDcols = c("Name", "PTDF", "country", "zone")]
