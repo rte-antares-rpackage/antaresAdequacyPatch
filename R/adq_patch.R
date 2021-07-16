@@ -279,7 +279,7 @@ adq_patch = function(patch_data, ts_FB_data,
   python_output = solve_single_time_step(mcYear, Date, timeId, zones, cbs, countries, grouped_patch, ptdf, capacity)
   if (is.null(python_output)){
     # In case the solver didn't manage to reach a solution
-    return(python_output)
+    return(NULL)
   }
   # Turning the python pandas dataframes into R data.frames
   areas = py_to_r(python_output$areas)

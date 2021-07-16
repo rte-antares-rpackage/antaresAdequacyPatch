@@ -202,11 +202,22 @@ run_adq <- function(opts, areas,
 		stopCluster(cl)
 	}
   
-	computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
-
+	computeTimeStampFromHourly(opts, nbcl = 1, type = c('areas', 'links'))
+	
+	existing_timesteps = c("hourly")
+	for (timestep in c("daily", "weekly", "monthly", "annual")){
+	  timestep_data = antaresRead::readAntares(areas = "all",
+	                                           mcYears = mcYears[[1]],
+	                                           timeStep = timestep,
+	                                           opts = opts,
+	                                           showProgress = FALSE)
+	  if (length(timestep_data) > 0){
+	    existing_timesteps <- append(existing_timesteps, timestep)
+	  }
+	}
 	##Write mc all
 	cat("Write mc all")
-	parAggregateMCall(opts, 1)
+	parAggregateMCall(opts, nbcl=1, timestep=existing_timesteps)
 	.add_csv_digest(opts)
 
 }

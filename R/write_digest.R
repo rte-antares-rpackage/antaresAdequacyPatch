@@ -23,8 +23,8 @@
 		unitKeep <- diges$Unit[coltoKeep]
 		StatsKeep <- diges$Stats[coltoKeep]
 		rentam <- names(areas)
-		areas <- rbindlist(list(data.table(t(c("", unitKeep))),
-								data.table(t(c("", StatsKeep))),
+		areas <- rbindlist(list(data.table(t(c("area", unitKeep))),
+								data.table(t(c("area", StatsKeep))),
 								areas), fill = FALSE)
 		names(areas) <- rentam
 		digets <- paste0(opts$simDataPath, "/mc-all/grid")
