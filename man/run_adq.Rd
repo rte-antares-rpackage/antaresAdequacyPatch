@@ -13,7 +13,9 @@ run_adq(
   nbcl = 10,
   antaresfbzone = "model_description_fb",
   showProgress = TRUE,
-  thresholdFilter = 1e+06
+  thresholdFilter = 1e+06,
+  core_ahc = F,
+  calculate_mc_all = TRUE
 )
 }
 \arguments{

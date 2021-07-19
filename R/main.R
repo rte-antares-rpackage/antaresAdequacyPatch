@@ -128,7 +128,8 @@ run_adq <- function(opts, areas,
                     antaresfbzone = "model_description_fb",
                     showProgress = TRUE,
                     thresholdFilter = 1000000,
-                    core_ahc = F){
+                    core_ahc = F,
+                    calculate_mc_all = TRUE){
   
   
   
@@ -230,14 +231,16 @@ run_adq <- function(opts, areas,
   }
   
   
-  
   computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
   
   ##Write mc all
-  cat("Write mc all")
-  parAggregateMCall(opts, nbcl)
-  .add_csv_digest(opts)
   
+  if(calculate_mc_all == T){
+    cat("Write mc all")
+    parAggregateMCall(opts, nbcl)
+    .add_csv_digest(opts)
+  }
+
 }
 
 
@@ -285,7 +288,7 @@ adq_write <- function(sim_opts,
                             core_ahc = core_ahc)
   
   if(!is.null(output)){
-    
+
     areas_data <- readAntares(areas = areas, mcYears = mcYears, showProgress = FALSE)
     output <- .transformOutput(output, antaresfbzone)
     links_data <- readAntares(links = getLinks(areas), mcYears = mcYears, showProgress = FALSE)
@@ -293,7 +296,7 @@ adq_write <- function(sim_opts,
     
     ###Filter to important modification
     
-    output$areas <- removeAreas(output$areas$area, output$areas, links_data, add=TRUE, sim_opts = sim_opts)
+    output$areas <- removeAreas(unique(c(output$areas$area, antaresfbzone)), output$areas, links_data, add=TRUE, sim_opts = sim_opts)
     
     ##Filtering
     tpmerge <- merge(areas_data, output$areas, by = c("area", "mcYear", "timeId"))
@@ -306,7 +309,7 @@ adq_write <- function(sim_opts,
     
     
     .write_adq_area(sim_opts, areas_data, output, links_data, unique(output$areas$area))
-    
+
     links_data$from <- NULL
     links_data$to <- NULL
     links_data <- links_data[link%in%unique(output$links$link)]

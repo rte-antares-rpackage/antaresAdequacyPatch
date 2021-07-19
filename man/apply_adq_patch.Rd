@@ -12,7 +12,8 @@ apply_adq_patch(
   links_NTC_data = NULL,
   ptdf_FB_data = NULL,
   capacity_FB_data = NULL,
-  ts_FB_data = NULL
+  ts_FB_data = NULL,
+  core_ahc
 )
 }
 \arguments{

@@ -69,8 +69,6 @@ adq_patch = function(patch_data, ts_FB_data,
 
 	countries_id = ptdf_data[, .(country.id = .GRP), by=ptdf.country]
 
-  browser()
-	
 	# Sets up AMPL
 	ampl = new(rAMPL::AMPL)
 
@@ -79,7 +77,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	ampl$setOption("solver", "amplxpress")
 	ampl$setOption("presolve", 1)
 
-	ampl$read(system.file("ampl/adq_patch.mod", package = "AdequacyPatch"))
+	ampl$read(system.file("ampl/adq_patch_cwe.mod", package = "AdequacyPatch"))
 
 
 	# Sends data to AMPL sets

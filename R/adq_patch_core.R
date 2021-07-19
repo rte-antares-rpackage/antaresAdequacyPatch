@@ -52,8 +52,8 @@ adq_patch_core = function(patch_data, ts_FB_data,
     from %in% FB_countries & to %in% FB_countries
   }
   
-  # FB_links <- getLinks(areas = "zz_flowbased", opts = sim_opts)
-  # ptdf_NTC_data = ptdf_NTC_data[!ptdf.zone %in% FB_links]
+  FB_links <- getLinks(areas = "zz_flowbased", opts = sim_opts)
+  ptdf_NTC_data = ptdf_NTC_data[!ptdf.zone %in% FB_links]
   
   
   # capacity_NTC_data = capacity_NTC_data[!(sapply(capacity.zone,
@@ -78,8 +78,7 @@ adq_patch_core = function(patch_data, ts_FB_data,
   ampl$setOption("solver", "amplxpress")
   ampl$setOption("presolve", 1)
   
-  ampl$read("inst/ampl/adq_patch.mod")
-  
+  ampl$read(system.file("ampl/adq_patch_core.mod", package = "AdequacyPatch"))
   
   # Sends data to AMPL sets
   ampl$getSet("FB_zones")$setValues(zones_id[, zone.id])
@@ -176,9 +175,7 @@ adq_patch_core = function(patch_data, ts_FB_data,
   
   
   ampl$setData(ptdf, 3, "")  # PTDF are independent from time-step
-  
-  # browser()
-  
+
   # Time-step by time-step resolution
   output = patch[
     ,
@@ -282,8 +279,7 @@ adq_patch_core = function(patch_data, ts_FB_data,
   )
   output <<- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
   merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
-  # browser()
-  
+
 }
 
 
