@@ -5,10 +5,11 @@
 
 ## Installation
 
-To install the last development version:
+Temporary overwriting the Installation instruction, until the merge is done.
 
+In order to use this version of the antaresAdequacyPatch, you will have to use:
 ```r
-devtools::install_github("rte-antares-rpackage/antaresAdequacyPatch")
+devtools::install_github("hugo-antoine-rtei/antaresAdequacyPatch", ref="open-source-linearization")
 ```
 
 To display the help of the package and see all the functions it provides, use:
@@ -18,7 +19,7 @@ help(package="antaresAdequacyPatch")
 ```
 
 
-## OR-Tools requirements
+## Requirements
 
 * You will need reticulate to run python code inside R:
 ```
@@ -27,8 +28,8 @@ install.packages("reticulate")
 * You need a Python 3.7.1+
 * Then create a .Renviron file with the path to your python:
   * If on Mac/Linux: create the $HOME/.Renviron file
-  * If on Windows: create the c:\Users\$env:USERNAME\Documents\.Renviron file
-inside the file, write:
+  * If on Windows: create the c:\\Users\\$env:USERNAME\\Documents\\.Renviron file
+* Inside the file, write:
 ```
 RETICULATE_PYTHON="path-to-your-python/bin/python3"
 ```
