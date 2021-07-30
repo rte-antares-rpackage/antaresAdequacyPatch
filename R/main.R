@@ -83,7 +83,7 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
 #' @param antaresfbzone antares names of flowbased zone
 #' @param showProgress show progress
 #' @param thresholdFilter filtering to important modification
-#'
+#' @param fb_constraints boolean: are there Flow-Based constraints to take into account in the Antares study
 #'
 #' @export
 #'
@@ -106,7 +106,8 @@ run_adq <- function(opts, areas,
 					nbcl = 10,
 					antaresfbzone = "model_description_fb",
 					showProgress = TRUE,
-					thresholdFilter = 1000000){
+					thresholdFilter = 1000000,
+					fb_constraints = TRUE){
 
 
 
@@ -144,14 +145,20 @@ run_adq <- function(opts, areas,
 
 	cat("Import NTC \n")
 	links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
-	cat("Import PTDF \n")
-	ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
-	cat("Import FB capacity \n")
-	capacity_FB_data = extract_FB_capacity(sim_opts=opts)
-	cat("Import FB time series \n")
-	ts_FB_data = extract_FB_ts(sim_opts=opts)
-
-
+	
+	if(fb_constraints){
+	  cat("Import PTDF \n")
+	  ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
+	  cat("Import FB capacity \n")
+	  capacity_FB_data = extract_FB_capacity(sim_opts=opts)
+	  cat("Import FB time series \n")
+	  ts_FB_data = extract_FB_ts(sim_opts=opts)
+	} else {
+	  ptdf_FB_data <- NULL
+	  capacity_FB_data <- NULL
+	  ts_FB_data <- NULL
+	}
+	
 	cat("Compute ADQ \n")
 
 	if(nbcl>1){

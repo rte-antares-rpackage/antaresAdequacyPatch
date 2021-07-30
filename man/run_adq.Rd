@@ -13,7 +13,8 @@ run_adq(
   nbcl = 10,
   antaresfbzone = "model_description_fb",
   showProgress = TRUE,
-  thresholdFilter = 1e+06
+  thresholdFilter = 1e+06,
+  fb_constraints = TRUE
 )
 }
 \arguments{
@@ -38,6 +39,8 @@ Default: "all"}
 \item{showProgress}{show progress}
 
 \item{thresholdFilter}{filtering to important modification}
+
+\item{fb_constraints}{boolean: are there Flow-Based constraints to take into account in the Antares study}
 }
 \description{
 Applies the Adequacy Patch on a study

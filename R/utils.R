@@ -31,15 +31,21 @@
 	links$area <- NULL
 	links$`FLOW LIN.` <- round(links$`FLOW LIN.`, 0)
 
-	setnames(out, "CWE", antaresfbzone)
-	links2 <- melt.data.table(out, id.vars = c("area","mcYear", "timeId"), measure.vars = antaresfbzone)
-	links2 <- links2[!is.na(links2$value)]
+	if("CWE" %in% names(out)){
+	  setnames(out, "CWE", antaresfbzone)
+	  links2 <- melt.data.table(out, id.vars = c("area","mcYear", "timeId"), measure.vars = antaresfbzone)
+	  links2 <- links2[!is.na(links2$value)]
+	  
+	  links2$variable <- paste0(links2$area," - ", links2$variable)
+	  links2$area <- NULL
+	  setnames(links2, "variable", "link")
+	  links2$value <- round(links2$value, 0)
+	  setnames(links2, "value", "FLOW LIN.")
+	}
+	else {
+	  links2 <- NULL
+	}
 
-	links2$variable <- paste0(links2$area," - ", links2$variable)
-	links2$area <- NULL
-	setnames(links2, "variable", "link")
-	links2$value <- round(links2$value, 0)
-	setnames(links2, "value", "FLOW LIN.")
 	links <- rbindlist(list(links, links2))
 	list(areas = areas, links = links)
 }
