@@ -5,10 +5,11 @@
 
 ## Installation
 
-To install the last development version:
+Temporary overwriting the Installation instruction, until the merge is done.
 
+In order to use this version of the antaresAdequacyPatch, you will have to use:
 ```r
-devtools::install_github("rte-antares-rpackage/antaresAdequacyPatch")
+devtools::install_github("hugo-antoine-rtei/antaresAdequacyPatch", ref="open-source-linearization")
 ```
 
 To display the help of the package and see all the functions it provides, use:
@@ -18,9 +19,24 @@ help(package="antaresAdequacyPatch")
 ```
 
 
-## Notice d'utilisation
+## Requirements
 
-Attention, pour que ce package fonctionne vous devez au préalable installer AMPL et Xpress sur votre ordinateur.
+* You will need reticulate to run python code inside R:
+```
+install.packages("reticulate")
+```
+* You need a Python 3.7.1+
+* Then create a .Renviron file with the path to your python:
+  * If on Mac/Linux: create the $HOME/.Renviron file
+  * If on Windows: create the c:\\Users\\$env:USERNAME\\Documents\\.Renviron file
+* Inside the file, write:
+```
+RETICULATE_PYTHON="path-to-your-python/bin/python3"
+```
+* Install the pandas library on your python
+https://pandas.pydata.org/pandas-docs/stable/getting_started/install.html
+* Install the ortools library on your python
+https://developers.google.com/optimization/install
 
 
 ### L'utilisation de la fonction `run_adq`

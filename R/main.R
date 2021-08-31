@@ -201,14 +201,23 @@ run_adq <- function(opts, areas,
 	if(parallel){
 		stopCluster(cl)
 	}
-
-
-
-	computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
-
+  
+	computeTimeStampFromHourly(opts, nbcl = 1, type = c('areas', 'links'))
+	
+	existing_timesteps = c("hourly")
+	for (timestep in c("daily", "weekly", "monthly", "annual")){
+	  timestep_data = antaresRead::readAntares(areas = "all",
+	                                           mcYears = mcYears[[1]],
+	                                           timeStep = timestep,
+	                                           opts = opts,
+	                                           showProgress = FALSE)
+	  if (length(timestep_data) > 0){
+	    existing_timesteps <- append(existing_timesteps, timestep)
+	  }
+	}
 	##Write mc all
 	cat("Write mc all")
-	parAggregateMCall(opts, nbcl)
+	parAggregateMCall(opts, nbcl=1, timestep=existing_timesteps)
 	.add_csv_digest(opts)
 
 }
@@ -277,9 +286,12 @@ adq_write <- function(sim_opts,
 
 
 		.write_adq_area(sim_opts, areas_data, output, links_data, unique(output$areas$area))
-
-		links_data$from <- NULL
-		links_data$to <- NULL
+    # if ("from" %in% names(links_data)){
+    links_data$from <- NULL
+    # }
+    # if ("to" %in% names(links_data)){
+    links_data$to <- NULL
+    # }
 		links_data <- links_data[link%in%unique(output$links$link)]
 		.write_adq_link(sim_opts, links_data, output)
 
