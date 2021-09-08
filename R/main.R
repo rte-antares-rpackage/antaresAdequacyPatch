@@ -26,41 +26,62 @@
 #'
 #' @export
 apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
-						   areas="all",
-						   virtual_areas=NULL,
-						   mcYears="all",
-						   links_NTC_data = NULL,
-						   ptdf_FB_data = NULL,
-						   capacity_FB_data = NULL,
-						   ts_FB_data = NULL) {
+                           areas="all",
+                           virtual_areas=NULL,
+                           mcYears="all",
+                           links_NTC_data = NULL,
+                           ptdf_FB_data = NULL,
+                           capacity_FB_data = NULL,
+                           ts_FB_data = NULL,
+                           core_ahc) {
 
-	patch_data <- extract_patch(areas = areas,
-								virtual_areas = virtual_areas,
-								sim_opts = sim_opts,
-								mcYears = mcYears)
+  patch_data <- extract_patch(areas = areas,
+                              virtual_areas = virtual_areas,
+                              sim_opts = sim_opts,
+                              mcYears = mcYears)
 
-	# patch_data = patch_data
-	# ts_FB_data = ts_FB_data
-	# capacity_FB_data = capacity_FB_data
-	# capacity_NTC_data = links_NTC_data$capacity
-	# ptdf_FB_data = ptdf_FB_data
-	# ptdf_NTC_data = links_NTC_data$ptdf
+  # patch_data = patch_data
+  # ts_FB_data = ts_FB_data
+  # capacity_FB_data = capacity_FB_data
+  # capacity_NTC_data = links_NTC_data$capacity
+  # ptdf_FB_data = ptdf_FB_data
+  # ptdf_NTC_data = links_NTC_data$ptdf
 
-	if(nrow(patch_data)>0){
+  if(nrow(patch_data)>0){
 
-		out <- adq_patch(
-			patch_data = patch_data,
-			ts_FB_data = ts_FB_data,
-			capacity_FB_data = capacity_FB_data,
-			capacity_NTC_data = links_NTC_data$capacity,
-			ptdf_FB_data = ptdf_FB_data,
-			ptdf_NTC_data = links_NTC_data$ptdf
-		)
+    if(core_ahc){
 
-	}else{
-		return(NULL)
-	}
-	out
+      out <- adq_patch_core(
+        patch_data = patch_data,
+        ts_FB_data = ts_FB_data,
+        capacity_FB_data = capacity_FB_data,
+        capacity_NTC_data = links_NTC_data$capacity,
+        ptdf_FB_data = ptdf_FB_data,
+        ptdf_NTC_data = links_NTC_data$ptdf,
+        sim_opts = sim_opts
+      )
+
+    }else {
+
+      out <- adq_patch(
+        patch_data = patch_data,
+        ts_FB_data = ts_FB_data,
+        capacity_FB_data = capacity_FB_data,
+        capacity_NTC_data = links_NTC_data$capacity,
+        ptdf_FB_data = ptdf_FB_data,
+        ptdf_NTC_data = links_NTC_data$ptdf,
+        sim_opts = sim_opts
+      )
+
+    }
+
+
+
+
+  }else{
+    return(NULL)
+  }
+  out
 
 }
 
@@ -106,7 +127,9 @@ run_adq <- function(opts, areas,
 					nbcl = 10,
 					antaresfbzone = "model_description_fb",
 					showProgress = TRUE,
-					thresholdFilter = 1000000){
+					thresholdFilter = 1000000,
+					core_ahc = FALSE,
+					calculate_mc_all = TRUE){
 
 
 
@@ -145,7 +168,11 @@ run_adq <- function(opts, areas,
 	cat("Import NTC \n")
 	links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
 	cat("Import PTDF \n")
-	ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
+	if(core_ahc){
+		ptdf_FB_data = extract_ptdf_core(sim_opts=opts)
+	} else {
+		ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
+	}
 	cat("Import FB capacity \n")
 	capacity_FB_data = extract_FB_capacity(sim_opts=opts)
 	cat("Import FB time series \n")
@@ -190,7 +217,8 @@ run_adq <- function(opts, areas,
 		  			  ts_FB_data = ts_FB_data,
 		  			  mcYears = mcYear,
 		  			  antaresfbzone = antaresfbzone,
-		  			  thresholdFilter = thresholdFilter)
+		  			  thresholdFilter = thresholdFilter,
+					  core_ahc = core_ahc)
 
 		  },
 		  .parallel = parallel,
@@ -201,23 +229,25 @@ run_adq <- function(opts, areas,
 	if(parallel){
 		stopCluster(cl)
 	}
-  
-	computeTimeStampFromHourly(opts, nbcl = 1, type = c('areas', 'links'))
-	
+
+
+
+	computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
+
 	existing_timesteps = c("hourly")
 	for (timestep in c("daily", "weekly", "monthly", "annual")){
-	  timestep_data = antaresRead::readAntares(areas = "all",
-	                                           mcYears = mcYears[[1]],
-	                                           timeStep = timestep,
-	                                           opts = opts,
-	                                           showProgress = FALSE)
-	  if (length(timestep_data) > 0){
-	    existing_timesteps <- append(existing_timesteps, timestep)
-	  }
+		timestep_data = antaresRead::readAntares(areas = "all",
+												 mcYears = mcYears[[1]],
+												 timeStep = timestep,
+												 opts = opts,
+												 showProgress = FALSE)
+		if (length(timestep_data) > 0){
+			existing_timesteps <- append(existing_timesteps, timestep)
+		}
 	}
 	##Write mc all
 	cat("Write mc all")
-	parAggregateMCall(opts, nbcl=1, timestep=existing_timesteps)
+	parAggregateMCall(opts, nbcl=nbcl, timestep=existing_timesteps)
 	.add_csv_digest(opts)
 
 }
@@ -245,26 +275,28 @@ run_adq <- function(opts, areas,
 #'
 #'
 adq_write <- function(sim_opts,
-					  areas,
-					  virtual_areas,
-					  links_NTC_data,
-					  ptdf_FB_data,
-					  capacity_FB_data,
-					  ts_FB_data,
-					  mcYears,
-					  antaresfbzone,
-					  thresholdFilter){
+                      areas,
+                      virtual_areas,
+                      links_NTC_data,
+                      ptdf_FB_data,
+                      capacity_FB_data,
+                      ts_FB_data,
+                      mcYears,
+                      antaresfbzone,
+                      thresholdFilter,
+                      core_ahc){
 
-	output <- apply_adq_patch(sim_opts = sim_opts,
-							  areas = areas,
-							  virtual_areas = virtual_areas,
-							  links_NTC_data = links_NTC_data,
-							  ptdf_FB_data = ptdf_FB_data,
-							  capacity_FB_data = capacity_FB_data,
-							  ts_FB_data = ts_FB_data,
-							  mcYears = mcYears)
+  output <- apply_adq_patch(sim_opts = sim_opts,
+                            areas = areas,
+                            virtual_areas = virtual_areas,
+                            links_NTC_data = links_NTC_data,
+                            ptdf_FB_data = ptdf_FB_data,
+                            capacity_FB_data = capacity_FB_data,
+                            ts_FB_data = ts_FB_data,
+                            mcYears = mcYears,
+                            core_ahc = core_ahc)
 
-	if(!is.null(output)){
+  if(!is.null(output)){
 
 		areas_data <- readAntares(areas = areas, mcYears = mcYears, showProgress = FALSE)
 		output <- .transformOutput(output, antaresfbzone)
@@ -273,7 +305,7 @@ adq_write <- function(sim_opts,
 
 		###Filter to important modification
 
-		output$areas <- removeAreas(output$areas$area, output$areas, links_data, add=TRUE, sim_opts = sim_opts)
+		output$areas <- removeAreas(unique(c(output$areas$area, antaresfbzone)), output$areas, links_data, add=TRUE, sim_opts = sim_opts)
 
 		##Filtering
 		tpmerge <- merge(areas_data, output$areas, by = c("area", "mcYear", "timeId"))
@@ -286,12 +318,9 @@ adq_write <- function(sim_opts,
 
 
 		.write_adq_area(sim_opts, areas_data, output, links_data, unique(output$areas$area))
-    # if ("from" %in% names(links_data)){
-    links_data$from <- NULL
-    # }
-    # if ("to" %in% names(links_data)){
-    links_data$to <- NULL
-    # }
+
+		links_data$from <- NULL
+		links_data$to <- NULL
 		links_data <- links_data[link%in%unique(output$links$link)]
 		.write_adq_link(sim_opts, links_data, output)
 

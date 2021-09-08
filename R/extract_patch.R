@@ -68,7 +68,6 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 		showProgress = FALSE
 	)
 
-
 	#True remove virtual areas
 	# patch_data = antaresRead::removeVirtualAreas(patch_data,
 	# 											 storageFlexibility = c(virtual_areas,

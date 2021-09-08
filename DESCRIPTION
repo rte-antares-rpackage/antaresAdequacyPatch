@@ -28,7 +28,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports:
 	data.table,
-	antaresRead,
+	antaresRead (>= 2.2.6),
 	stats,
 	rAMPL,
 	doParallel,

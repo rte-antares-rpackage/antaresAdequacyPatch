@@ -14,7 +14,8 @@ adq_write(
   ts_FB_data,
   mcYears,
   antaresfbzone,
-  thresholdFilter
+  thresholdFilter,
+  core_ahc
 )
 }
 \arguments{

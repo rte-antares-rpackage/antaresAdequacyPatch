@@ -18,7 +18,7 @@
 #'
 #' links_NTC_data = extract_NTC_links(areas=areas, sim_opts=sim_opts)
 #' }
-extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions()) {
+extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T) {
 
 	links = antaresRead::getLinks(areas, internalOnly=TRUE)
 
@@ -27,6 +27,11 @@ extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions()) {
 		.(timeId, zone = link, transCapacityDirect, transCapacityIndirect)
 	]
 
+	if(set_capacity_one_to_infinite){
+	  links_data[transCapacityDirect == 1, transCapacityDirect := 99999]
+	  links_data[transCapacityIndirect == 1, transCapacityIndirect := 99999]
+	}
+	
 	links_data = data.table::melt(
 		links_data,
 		id.vars=c("timeId", "zone"),
