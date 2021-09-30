@@ -35,7 +35,8 @@ Imports:
 	plyr,
 	antaresEditObject,
 	fs,
-	pipeR
+	pipeR,
+	reticulate
 Suggests: 
     testthat,
     knitr,

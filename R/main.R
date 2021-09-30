@@ -2,94 +2,11 @@
 .datatable.aware = TRUE
 
 
-#' Applies the Adequacy Patch on a given simulation
-#'
-#' The Adequacy patch is a post-processing phase on an Antares study simulation,
-#' applying the local-matching and curtailment sharing rules as defined by the
-#' EUPHEMIA to correct situations with at least one country in loss of load.
-#'
-#' @param sim_opts (string) Simulation options, as returned by antaresRead::setSimulationPath
-#' @param areas (string or vector of strings) what areas the patch should
-#' be applied on. Default: ""
-#' @param virtual_areas (string or vector of strings) Virtual areas of the study,
-#' excluded from the patch. Default: NULL
-#' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
-#' extract from. The special value "all" extracts all Monte-Carlo Years.
-#' Default: "all"
-#' @param links_NTC_data links_NTC_data
-#' @param ptdf_FB_data ptdf_FB_data
-#' @param capacity_FB_data capacity_FB_data
-#' @param ts_FB_data ts_FB_data
-#'
-#' @return (data.table) Table giving the MRG, ENS and net-position for each country
-#'	at each time-step
-#'
-#' @export
-apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
-                           areas="all",
-                           virtual_areas=NULL,
-                           mcYears="all",
-                           links_NTC_data = NULL,
-                           ptdf_FB_data = NULL,
-                           capacity_FB_data = NULL,
-                           ts_FB_data = NULL,
-                           core_ahc) {
-
-  patch_data <- extract_patch(areas = areas,
-                              virtual_areas = virtual_areas,
-                              sim_opts = sim_opts,
-                              mcYears = mcYears)
-
-  # patch_data = patch_data
-  # ts_FB_data = ts_FB_data
-  # capacity_FB_data = capacity_FB_data
-  # capacity_NTC_data = links_NTC_data$capacity
-  # ptdf_FB_data = ptdf_FB_data
-  # ptdf_NTC_data = links_NTC_data$ptdf
-
-  if(nrow(patch_data)>0){
-
-    if(core_ahc){
-
-      out <- adq_patch_core(
-        patch_data = patch_data,
-        ts_FB_data = ts_FB_data,
-        capacity_FB_data = capacity_FB_data,
-        capacity_NTC_data = links_NTC_data$capacity,
-        ptdf_FB_data = ptdf_FB_data,
-        ptdf_NTC_data = links_NTC_data$ptdf,
-        sim_opts = sim_opts
-      )
-
-    }else {
-
-      out <- adq_patch(
-        patch_data = patch_data,
-        ts_FB_data = ts_FB_data,
-        capacity_FB_data = capacity_FB_data,
-        capacity_NTC_data = links_NTC_data$capacity,
-        ptdf_FB_data = ptdf_FB_data,
-        ptdf_NTC_data = links_NTC_data$ptdf,
-        sim_opts = sim_opts
-      )
-
-    }
-
-
-
-
-  }else{
-    return(NULL)
-  }
-  out
-
-}
-
-
-
-
 #' Applies the Adequacy Patch on a study
 #'
+#'#' The Adequacy patch is a post-processing phase on an Antares study simulation,
+#' applying the local-matching and curtailment sharing rules as defined by the
+#' EUPHEMIA to correct situations with at least one country in loss of load.
 #'
 #' @param opts Simulation options, as returned by antaresRead::setSimulationPath
 #' @param areas (string or vector of strings) what areas the patch should
@@ -99,16 +16,18 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
 #' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
 #' extract from. The special value "all" extracts all Monte-Carlo Years.
 #' Default: "all"
-#' @param ext name extand for output study.
-#' @param nbcl numeric, number of process in cluster
-#' @param antaresfbzone antares names of flowbased zone
-#' @param showProgress show progress
-#' @param thresholdFilter filtering to important modification
-#'
+#' @param ext name extand for output study. Default: NULL
+#' @param nbcl numeric, number of process in cluster Default: 10
+#' @param antaresfbzone antares names of flowbased zone Default: "model_description_fb"
+#' @param showProgress show progress Default: TRUE
+#' @param thresholdFilter filtering to important modification Default: 1000000
+#' @param core_ahc (boolean) TRUE for using CORE area, FALSE for using CWE area Default: FALSE
+#' @param calculate_mc_all (boolean) TRUE carries out the timestep aggregation of the output Default: FALSE
+#' @param log_detail (boolean) TRUE for more details, Default: FALSE
 #'
 #' @export
 #'
-#' @import doParallel plyr antaresEditObject fs antaresRead pipeR
+#' @import doParallel plyr antaresEditObject fs antaresRead pipeR reticulate
 #'
 #' @examples
 #' \dontrun{
@@ -129,7 +48,8 @@ run_adq <- function(opts, areas,
 					showProgress = TRUE,
 					thresholdFilter = 1000000,
 					core_ahc = FALSE,
-					calculate_mc_all = TRUE){
+					calculate_mc_all = FALSE,
+					log_detail = FALSE){
 
 
 
@@ -145,7 +65,7 @@ run_adq <- function(opts, areas,
 	if(showProgress)cat("Verify function inputs\n")
 
 	if(!dir.exists(file.path(opts$studyPath, "user"))){
-		stop("You wust run run_adq on a flow-based antares studie, folder user missing")
+		stop("You wust run run_adq on a flow-based antares study, folder user missing")
 	}
 
 	if(!antaresfbzone%in%getAreas(opts = opts)){
@@ -199,6 +119,7 @@ run_adq <- function(opts, areas,
 			library(antaresEditObject)
 			library(data.table)
 			library(fs)
+			library(reticulate)
 
 			opts <- setSimulationPath(opts$simPath)
 		})
@@ -208,17 +129,18 @@ run_adq <- function(opts, areas,
 
 	llply(mcYears,
 		  .fun = function(mcYear){
-		  	adq_write(sim_opts = opts,
-		  			  areas = areas,
-		  			  virtual_areas = virtual_areas,
-		  			  links_NTC_data = links_NTC_data,
-		  			  ptdf_FB_data = ptdf_FB_data,
-		  			  capacity_FB_data = capacity_FB_data,
-		  			  ts_FB_data = ts_FB_data,
-		  			  mcYears = mcYear,
-		  			  antaresfbzone = antaresfbzone,
-		  			  thresholdFilter = thresholdFilter,
-					  core_ahc = core_ahc)
+				adq_write(sim_opts = opts,
+						  areas = areas,
+						  virtual_areas = virtual_areas,
+						  links_NTC_data = links_NTC_data,
+						  ptdf_FB_data = ptdf_FB_data,
+						  capacity_FB_data = capacity_FB_data,
+						  ts_FB_data = ts_FB_data,
+						  mcYears = mcYear,
+						  antaresfbzone = antaresfbzone,
+						  thresholdFilter = thresholdFilter,
+						  core_ahc = core_ahc,
+						  log_detail = log_detail)
 
 		  },
 		  .parallel = parallel,
@@ -246,10 +168,11 @@ run_adq <- function(opts, areas,
 		}
 	}
 	##Write mc all
-	cat("Write mc all")
-	parAggregateMCall(opts, nbcl=nbcl, timestep=existing_timesteps)
-	.add_csv_digest(opts)
-
+	if(calculate_mc_all == TRUE){
+		cat("Write mc all")
+		parAggregateMCall(opts, nbcl=nbcl, timestep=existing_timesteps)
+		.add_csv_digest(opts)
+	}
 }
 
 
@@ -259,17 +182,21 @@ run_adq <- function(opts, areas,
 #'
 #' @param sim_opts Simulation options, as returned by antaresRead::setSimulationPath
 #' @param areas (string or vector of strings) what areas the patch should
-#' be applied on. Default: ""
+#' be applied on.
 #' @param virtual_areas (string or vector of strings) Virtual areas of the study,
-#' excluded from the patch. Default: NULL
+#' excluded from the patch.
 #' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
 #' extract from. The special value "all" extracts all Monte-Carlo Years.
-#' Default: "all"
 #' @param links_NTC_data NTC
 #' @param ptdf_FB_data ptdf
 #' @param capacity_FB_data capa
 #' @param ts_FB_data ts
+#' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
+#' extract from. The special value "all" extracts all Monte-Carlo Years.
 #' @param antaresfbzone name for new antares area
+#' @param thresholdFilter filtering to important modification
+#' @param core_ahc (boolean) TRUE for using CORE area, FALSE for using CWE area
+#' @param log_detail (boolean) TRUE for more details
 #'
 #' @export
 #'
@@ -284,20 +211,23 @@ adq_write <- function(sim_opts,
                       mcYears,
                       antaresfbzone,
                       thresholdFilter,
-                      core_ahc){
-
-  output <- apply_adq_patch(sim_opts = sim_opts,
-                            areas = areas,
-                            virtual_areas = virtual_areas,
-                            links_NTC_data = links_NTC_data,
-                            ptdf_FB_data = ptdf_FB_data,
-                            capacity_FB_data = capacity_FB_data,
-                            ts_FB_data = ts_FB_data,
-                            mcYears = mcYears,
-                            core_ahc = core_ahc)
-
-  if(!is.null(output)){
-
+                      core_ahc,
+					  log_detail){
+	patch_data <- extract_patch(areas = areas,
+								virtual_areas = virtual_areas,
+								sim_opts = sim_opts,
+								mcYears = mcYears)
+	if(nrow(patch_data)>0){
+		output <- adq_patch(
+			patch_data = patch_data,
+			ts_FB_data = ts_FB_data,
+			capacity_FB_data = capacity_FB_data,
+			capacity_NTC_data = links_NTC_data$capacity,
+			ptdf_FB_data = ptdf_FB_data,
+			ptdf_NTC_data = links_NTC_data$ptdf,
+			sim_opts = sim_opts,
+			core_ahc = core_ahc,
+			log_detail = log_detail)
 		areas_data <- readAntares(areas = areas, mcYears = mcYears, showProgress = FALSE)
 		output <- .transformOutput(output, antaresfbzone)
 		links_data <- readAntares(links = getLinks(areas), mcYears = mcYears, showProgress = FALSE)
@@ -323,6 +253,5 @@ adq_write <- function(sim_opts,
 		links_data$to <- NULL
 		links_data <- links_data[link%in%unique(output$links$link)]
 		.write_adq_link(sim_opts, links_data, output)
-
 	}
 }
