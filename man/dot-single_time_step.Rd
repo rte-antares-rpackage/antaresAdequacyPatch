@@ -2,22 +2,50 @@
 % Please edit documentation in R/adq_patch.R
 \name{.single_time_step}
 \alias{.single_time_step}
-\title{Calls the AMPL Adequacy patch at each time-step}
+\title{Calls the Python Adequacy patch at each time-step}
 \usage{
-.single_time_step(ampl, patch, capacity)
+.single_time_step(
+  mcYear,
+  Date,
+  timeId,
+  zones,
+  cbs,
+  countries,
+  grouped_patch,
+  ptdf,
+  capacity,
+  core_ahc,
+  log_detail
+)
 }
 \arguments{
-\item{ampl}{(rAMPL::AMPL) AMPL object, with model and PTDF already loaded}
+\item{mcYear}{(numeric) Monte Carlo year, for logging purposes}
 
-\item{patch}{(data.table) Relevant data form the simulation for this time-step}
+\item{Date}{(character) Date, for logging purposes}
+
+\item{timeId}{(numeric) timeId, for logging purposes}
+
+\item{zones}{(list) zones as a list of integers}
+
+\item{cbs}{(data.table) critical branches, a data.table containing a column for the zone and a column for the cb id}
+
+\item{countries}{(data.table) countries, a data.table containing a column for the zone and a column for the country id}
+
+\item{grouped_patch}{(data.table) The patch data.table grouped by mcYear, Date & timeId}
+
+\item{ptdf}{(data.table) the ptdf coefficients of the network}
 
 \item{capacity}{(data.table) Limit capacity on each CB, containing both flow-based
 and NTC data}
+
+\item{core_ahc}{(boolean) TRUE for using CORE area, FALSE for using CWE area}
+
+\item{log_detail}{(boolean) TRUE for more details}
 }
 \value{
 (data.table) Table giving the MRG, ENS and net-position for each country
 at this time-step
 }
 \description{
-Calls the AMPL Adequacy patch at each time-step
+Calls the Python Adequacy patch at each time-step
 }

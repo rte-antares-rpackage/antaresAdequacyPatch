@@ -15,17 +15,18 @@ adq_write(
   mcYears,
   antaresfbzone,
   thresholdFilter,
-  core_ahc
+  core_ahc,
+  log_detail
 )
 }
 \arguments{
 \item{sim_opts}{Simulation options, as returned by antaresRead::setSimulationPath}
 
 \item{areas}{(string or vector of strings) what areas the patch should
-be applied on. Default: ""}
+be applied on.}
 
 \item{virtual_areas}{(string or vector of strings) Virtual areas of the study,
-excluded from the patch. Default: NULL}
+excluded from the patch.}
 
 \item{links_NTC_data}{NTC}
 
@@ -36,10 +37,15 @@ excluded from the patch. Default: NULL}
 \item{ts_FB_data}{ts}
 
 \item{mcYears}{(numeric or vector of numeric) The Monte-Carlo years to
-extract from. The special value "all" extracts all Monte-Carlo Years.
-Default: "all"}
+extract from. The special value "all" extracts all Monte-Carlo Years.}
 
 \item{antaresfbzone}{name for new antares area}
+
+\item{thresholdFilter}{filtering to important modification}
+
+\item{core_ahc}{(boolean) TRUE for using CORE area, FALSE for using CWE area}
+
+\item{log_detail}{(boolean) TRUE for more details}
 }
 \description{
 Applies the Adequacy and write study by mc year

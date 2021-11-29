@@ -12,7 +12,9 @@ adq_patch(
   capacity_NTC_data,
   ptdf_FB_data,
   ptdf_NTC_data,
-  sim_opts
+  sim_opts,
+  core_ahc,
+  log_detail
 )
 }
 \arguments{
@@ -29,6 +31,12 @@ border, mimicking capacity_FB_data}
 \item{ptdf_FB_data}{(data.table) PTDF for each country on each critical branch}
 
 \item{ptdf_NTC_data}{(data.table) Mimics ptdf_FB_data for each border}
+
+\item{sim_opts}{(string) Simulation options, as returned by antaresRead::setSimulationPath}
+
+\item{core_ahc}{(boolean) TRUE for using CORE area, FALSE for using CWE area}
+
+\item{log_detail}{(boolean) TRUE for more details}
 }
 \value{
 (data.table) Table giving the MRG, ENS and net-position for each country
@@ -41,7 +49,7 @@ EUPHEMIA to correct situations with at least one country in loss of load.
 }
 \details{
 This function does not solve anything itself, it sets up and transfers the
-relevant data to an AMPL model which then solves it using XPRESS.
+relevant data to a python file that builds and solves the problem using OR-TOOLS.
 }
 \examples{
 \dontrun{
@@ -58,7 +66,8 @@ output = adq_patch(
 patch_data,
 ts_FB_data,
 capacity_FB_data, links_NTC_data$capacity,
-ptdf_FB_data, links_NTC_data$ptdf
+ptdf_FB_data, links_NTC_data$ptdf,
+ sim_opts, core_ahc=FALSE, log_detail=FALSE
 )
 }
 }

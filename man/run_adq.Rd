@@ -14,8 +14,9 @@ run_adq(
   antaresfbzone = "model_description_fb",
   showProgress = TRUE,
   thresholdFilter = 1e+06,
-  core_ahc = F,
-  calculate_mc_all = TRUE
+  core_ahc = FALSE,
+  calculate_mc_all = FALSE,
+  log_detail = FALSE
 )
 }
 \arguments{
@@ -31,18 +32,26 @@ excluded from the patch. Default: NULL}
 extract from. The special value "all" extracts all Monte-Carlo Years.
 Default: "all"}
 
-\item{ext}{name extand for output study.}
+\item{ext}{name extand for output study. Default: NULL}
 
-\item{nbcl}{numeric, number of process in cluster}
+\item{nbcl}{numeric, number of process in cluster Default: 10}
 
-\item{antaresfbzone}{antares names of flowbased zone}
+\item{antaresfbzone}{antares names of flowbased zone Default: "model_description_fb"}
 
-\item{showProgress}{show progress}
+\item{showProgress}{show progress Default: TRUE}
 
-\item{thresholdFilter}{filtering to important modification}
+\item{thresholdFilter}{filtering to important modification Default: 1000000}
+
+\item{core_ahc}{(boolean) TRUE for using CORE area, FALSE for using CWE area Default: FALSE}
+
+\item{calculate_mc_all}{(boolean) TRUE carries out the timestep aggregation of the output Default: FALSE}
+
+\item{log_detail}{(boolean) TRUE for more details, Default: FALSE}
 }
 \description{
-Applies the Adequacy Patch on a study
+#' The Adequacy patch is a post-processing phase on an Antares study simulation,
+applying the local-matching and curtailment sharing rules as defined by the
+EUPHEMIA to correct situations with at least one country in loss of load.
 }
 \examples{
 \dontrun{
