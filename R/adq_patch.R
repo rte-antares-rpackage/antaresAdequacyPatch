@@ -351,7 +351,7 @@ adq_patch = function(patch_data, ts_FB_data,
                              grouped_patch, ptdf, capacity, core_ahc, log_detail) {
   # Setting up python script for or-tools use
   library(reticulate)
-  source_python("Python/adq_patch_python.py")
+  source_python(system.file("python", "adq_patch_python.py", package = "AdequacyPatch"))
   python_output = solve_single_time_step(mcYear, Date, timeId, zones, cbs, countries, grouped_patch, ptdf, capacity,
 										 core_ahc, log_detail)
   if (is.null(python_output)){

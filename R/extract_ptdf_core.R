@@ -1,6 +1,6 @@
 extract_ptdf_core <- function(sim_opts=antaresRead::simOptions()){
   require(stringr)
-  
+  library(data.table)
   ptdf = data.table::fread(
     paste(sim_opts$studyPath, "user/flowbased/weight.txt", sep="/")
   )
