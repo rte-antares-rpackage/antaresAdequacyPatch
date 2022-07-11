@@ -214,7 +214,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	                                     capacity_FB[  # For each CB, selects the right capacity depending on typical day and hour
 	                                       capacity.typical_day ==
 	                                         ts_FB_data[
-	                                           ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.Date,
+	                                           ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.timeId,
 	                                           ts.typical_day
 	                                         ]
 	                                       
