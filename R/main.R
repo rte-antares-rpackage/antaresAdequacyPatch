@@ -191,7 +191,7 @@ run_adq <- function(opts, areas,
   if(parallel){
     cl <- makeCluster(nbcl)
     clusterExport(cl, c("ptdf_FB_data", "capacity_FB_data", "ts_FB_data",
-                        "areas", "opts", "virtual_areas", "antaresfbzone", "core_ahc", "log_detail", "links_NTC_data", "thresholdFilter"), envir = environment())
+                        "areas", "opts", "virtual_areas", "antaresfbzone", "core_ahc", "links_NTC_data", "thresholdFilter"), envir = environment())
     
     clusterEvalQ(cl, {
       library(antaresRead)
