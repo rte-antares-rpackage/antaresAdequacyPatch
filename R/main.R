@@ -170,7 +170,7 @@ run_adq <- function(opts, areas,
 	##Write mc all
 	if(calculate_mc_all == TRUE){
 		cat("Write mc all")
-		parAggregateMCall(opts, nbcl=1, timestep=existing_timesteps)
+		parAggregateMCall(opts, nbcl=nbcl, timestep=existing_timesteps)
 		.add_csv_digest(opts)
 	}
 }
