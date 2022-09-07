@@ -236,11 +236,11 @@ run_adq <- function(opts, areas,
   ##Write mc all
 
   cat("Write mc all is disabled")
-  # if(calculate_mc_all == T){
-  #   cat("Write mc all")
-  #   parAggregateMCall(opts, nbcl)
-  #   .add_csv_digest(opts)
-  # }
+  if(calculate_mc_all == T){
+    cat("Write mc all")
+    parAggregateMCall(opts, nbcl)
+    .add_csv_digest(opts)
+  }
 
 }
 
