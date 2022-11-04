@@ -177,37 +177,32 @@ adq_patch_core = function(patch_data, ts_FB_data,
   
   ampl$setData(ptdf, 3, "")  # PTDF are independent from time-step
 
+  
+  # For each CB, selects the right capacity depending on typical day and hour
+  cap_data <- rbind(capacity_FB[capacity.typical_day ==
+                                  ts_FB_data[
+                                    ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.timeId,
+                                    ts.typical_day
+                                  ]
+                                
+                                & capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
+                                .(
+                                  cb.id,
+                                  capacity
+                                )],
+                    
+                    capacity_NTC[capacity.timeId == patch.timeId & capacity.mcYear == patch.mcYear, #V8.2
+                                 .(
+                                   cb.id,
+                                   capacity
+                                 )
+                    ])
+  
   # Time-step by time-step resolution
-  output = patch[
-    ,
-    .single_time_step_core(
-      ampl,
-      .SD,
-      rbind(
-        capacity_FB[  # For each CB, selects the right capacity depending on typical day and hour
-          capacity.typical_day ==
-            ts_FB_data[
-              ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.timeId,
-              ts.typical_day
-            ]
-          
-          & capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
-          .(
-            cb.id,
-            capacity
-          )
-        ],
-        capacity_NTC[
-          capacity.timeId == patch.timeId & capacity.mcYear == patch.mcYear, #V8.2
-          .(
-            cb.id,
-            capacity
-          )
-        ]
-      )
-    ),
-    by=.(patch.mcYear, patch.Date, patch.timeId)
-  ]
+  output = patch[, .single_time_step_core(ampl,
+                                          .SD,
+                                          cap_data), # cap_data : rbind
+                 by=.(patch.mcYear, patch.Date, patch.timeId)]
   
   ampl$close()
   
