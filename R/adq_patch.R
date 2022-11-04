@@ -152,6 +152,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	)[
 		,
 		.(
+		  capacity.mcYear, #V8.2
 			capacity.timeId,
 			zone.id, cb.id,  # AMPL sets : FB_zones, CB[zone]
 			capacity = capacity.capacity  # AMPL parameter : capacity
@@ -198,7 +199,7 @@ adq_patch = function(patch_data, ts_FB_data,
 					)
 				],
 				capacity_NTC[
-					capacity.timeId == patch.timeId,
+					capacity.timeId == patch.timeId & capacity.mcYear == patch.mcYear, #V8.2
 					.(
 						zone.id, cb.id,
 						capacity

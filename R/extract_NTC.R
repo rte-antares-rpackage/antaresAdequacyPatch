@@ -21,10 +21,10 @@
 extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T) {
 
 	links = antaresRead::getLinks(areas, internalOnly=TRUE)
-
-	links_data = antaresRead::readInputTS(linkCapacity=links, opts=sim_opts)[
-		,
-		.(timeId, zone = link, transCapacityDirect, transCapacityIndirect)
+	
+	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links, mcYear = "all", opts=sim_opts)[
+	  ,
+	  .(mcYear, timeId, zone = link, transCapacityDirect, transCapacityIndirect)
 	]
 
 	if(set_capacity_one_to_infinite){
@@ -34,7 +34,7 @@ extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set
 	
 	links_data = data.table::melt(
 		links_data,
-		id.vars=c("timeId", "zone"),
+		id.vars=c("mcYear", "timeId", "zone"),
 		measure.vars=c("transCapacityDirect", "transCapacityIndirect"),
 		variable.name="CB",
 		value.name="capacity"
