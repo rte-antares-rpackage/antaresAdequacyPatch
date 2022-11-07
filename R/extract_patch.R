@@ -107,7 +107,7 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			PSP,
 
 			Supply = PSP + `MISC. NDG`
-			+ `H. ROR` + WIND + SOLAR
+			+ `H. ROR` + ifelse("WIND" %in% colnames(patch_data),WIND + SOLAR,`WIND OFFSHORE` +`WIND ONSHORE` + `SOLAR CONCRT.` + `SOLAR PV` + `SOLAR ROOFT`)
 			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `MISC. DTG`
 			+ `H. STOR` - `H. PUMP` + `ROW BAL.`,
 
