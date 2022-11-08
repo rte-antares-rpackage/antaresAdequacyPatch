@@ -96,6 +96,8 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			by=.(mcYear, timeId)
 		][, patch]
 	][
+	  , `ALL MISC. DTG` := sum(.SD), .SDcols = grep("MISC. DTG", colnames(patch_data), value = T)
+	][
 		,
 		.(
 			mcYear,
@@ -107,8 +109,12 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			PSP,
 
 			Supply = PSP + `MISC. NDG`
-			+ `H. ROR` + ifelse("WIND" %in% colnames(patch_data),WIND + SOLAR,`WIND OFFSHORE` +`WIND ONSHORE` + `SOLAR CONCRT.` + `SOLAR PV` + `SOLAR ROOFT`)
-			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `MISC. DTG`
+			+ `H. ROR` + ifelse("WIND" %in% colnames(patch_data),
+			                    WIND + SOLAR,
+			                    `WIND OFFSHORE` +`WIND ONSHORE` 
+			                    + `SOLAR CONCRT.` + `SOLAR PV` + `SOLAR ROOFT` 
+			                    + `RENEW. 1` + `RENEW. 2` + `RENEW. 3` + `RENEW. 4`)
+			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `ALL MISC. DTG`
 			+ `H. STOR` - `H. PUMP` + `ROW BAL.`,
 
 			Load = LOAD,
