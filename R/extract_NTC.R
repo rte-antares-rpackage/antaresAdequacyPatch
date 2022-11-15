@@ -18,11 +18,11 @@
 #'
 #' links_NTC_data = extract_NTC_links(areas=areas, sim_opts=sim_opts)
 #' }
-extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T) {
+extract_NTC_links = function(areas=NULL, mcYears="all", sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T) {
 
 	links = antaresRead::getLinks(areas, internalOnly=TRUE)
 	
-	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links, mcYear = "all", opts=sim_opts)[
+	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links, mcYear=mcYears, opts=sim_opts)[
 	  ,
 	  .(mcYear, timeId, zone = link, transCapacityDirect, transCapacityIndirect)
 	]
