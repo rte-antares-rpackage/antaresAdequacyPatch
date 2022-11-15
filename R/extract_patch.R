@@ -88,7 +88,7 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 
 	# patch_data = patch_data$areas[area %in% areas]
 	patch_data = patch_data[area %in% areas]
-
+	
 	patch_data = patch_data[
 		patch_data[
 			,
@@ -109,11 +109,7 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			PSP,
 
 			Supply = PSP + `MISC. NDG`
-			+ `H. ROR` + ifelse("WIND" %in% colnames(patch_data),
-			                    WIND + SOLAR,
-			                    `WIND OFFSHORE` +`WIND ONSHORE` 
-			                    + `SOLAR CONCRT.` + `SOLAR PV` + `SOLAR ROOFT` 
-			                    + `RENW. 1` + `RENW. 2` + `RENW. 3` + `RENW. 4`)
+			+ `H. ROR` + WIND + SOLAR
 			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `ALL MISC. DTG`
 			+ `H. STOR` - `H. PUMP` + `ROW BAL.`,
 
@@ -131,10 +127,11 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			# as.numeric(sapply(Load - Supply - MRG, .pos)),
 			# as.numeric(sapply(Supply + MRG - Load, .pos))
 
-			as.numeric(sapply(Load - Supply - MRG, .pos)),
+			as.numeric(sapply(Load - Supply, .pos)),
 			as.numeric(Supply - Load)
 		)
 	]
+
 	data.table::setnames(patch_data, function(colname){paste("patch", colname, sep=".")})
 
 	patch_data
