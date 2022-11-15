@@ -112,11 +112,7 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			PSP,
 
 			Supply = PSP + `MISC. NDG`
-<<<<<<< HEAD
-			+ `H. ROR` + WIND + SOLAR
-=======
 			+ `H. ROR` + `RENEWABLES`
->>>>>>> f74b97a4e5e7dd56fa10bcf948b2b12eac9d1a00
 			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `ALL MISC. DTG`
 			+ `H. STOR` - `H. PUMP` + `ROW BAL.`,
 
