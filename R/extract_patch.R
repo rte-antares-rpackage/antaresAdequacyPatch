@@ -130,7 +130,7 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			# as.numeric(sapply(Load - Supply - MRG, .pos)),
 			# as.numeric(sapply(Supply + MRG - Load, .pos))
 
-			as.numeric(sapply(Load - Supply - MRG, .pos)),
+			as.numeric(sapply(Load - Supply, .pos)),
 			as.numeric(Supply - Load)
 		)
 	]
