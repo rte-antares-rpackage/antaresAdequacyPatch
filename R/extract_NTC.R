@@ -3,6 +3,8 @@
 #' @param areas (string or vector of strings) Areas between which we want to
 #'	extract the links.
 #' @param sim_opts (list) Simulation options as given by antaresRead::setSimulationPath
+#' @param set_capacity_one_to_infinite (boolean)
+#' @param mcYears (integer) vector of years to read
 #'
 #' @return (list) such that $capacity is a data.table containing the maximum
 #'	transfer capacity for each link (divided in Direct and Indirect)
@@ -18,11 +20,11 @@
 #'
 #' links_NTC_data = extract_NTC_links(areas=areas, sim_opts=sim_opts)
 #' }
-extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T) {
+extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), set_capacity_one_to_infinite = T, mcYears = NULL) {
 
 	links = antaresRead::getLinks(areas, internalOnly=TRUE)
 	
-	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links, mcYear = "all", opts=sim_opts)[
+	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links, mcYear = mcYears, opts=sim_opts)[
 	  ,
 	  .(mcYear, timeId, zone = link, transCapacityDirect, transCapacityIndirect)
 	]
