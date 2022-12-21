@@ -233,13 +233,9 @@ run_adq <- function(opts, areas,
   computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
   
   ##Write mc all
-
-  cat("Write mc all is disabled")
-  if(calculate_mc_all == T){
-    cat("Write mc all")
-    parAggregateMCall(opts, nbcl)
-    .add_csv_digest(opts)
-  }
+  cat("Write mc all")
+  parAggregateMCall(opts, nbcl)
+  .add_csv_digest(opts)
 
 }
 
