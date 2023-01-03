@@ -16,7 +16,6 @@
 #' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
 #' extract from. The special value "all" extracts all Monte-Carlo Years.
 #' Default: "all"
-#' @param links_NTC_data links_NTC_data
 #' @param ptdf_FB_data ptdf_FB_data
 #' @param capacity_FB_data capacity_FB_data
 #' @param ts_FB_data ts_FB_data
@@ -29,11 +28,12 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
                            areas="all",
                            virtual_areas=NULL,
                            mcYears="all",
-                           links_NTC_data = NULL,
                            ptdf_FB_data = NULL,
                            capacity_FB_data = NULL,
                            ts_FB_data = NULL,
                            core_ahc) {
+  # cat("Import NTC \n")
+  links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts, mcYears=mcYears)
   
   patch_data <- extract_patch(areas = areas,
                               virtual_areas = virtual_areas,
@@ -165,8 +165,8 @@ run_adq <- function(opts, areas,
   }
   
   
-  cat("Import NTC \n")
-  links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
+  # cat("Import NTC \n")
+  # links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
   cat("Import PTDF \n")
   if(core_ahc){
     ptdf_FB_data = extract_ptdf_core(sim_opts=opts)
@@ -191,7 +191,7 @@ run_adq <- function(opts, areas,
   if(parallel){
     cl <- makeCluster(nbcl)
     clusterExport(cl, c("ptdf_FB_data", "capacity_FB_data", "ts_FB_data",
-                        "areas", "opts", "virtual_areas", "antaresfbzone", "core_ahc", "links_NTC_data", "thresholdFilter"), envir = environment())
+                        "areas", "opts", "virtual_areas", "antaresfbzone", "core_ahc", "thresholdFilter"), envir = environment())
     
     clusterEvalQ(cl, {
       library(antaresRead)
@@ -211,7 +211,6 @@ run_adq <- function(opts, areas,
           adq_write(sim_opts = opts,
                     areas = areas,
                     virtual_areas = virtual_areas,
-                    links_NTC_data = links_NTC_data,
                     ptdf_FB_data = ptdf_FB_data,
                     capacity_FB_data = capacity_FB_data,
                     ts_FB_data = ts_FB_data,
@@ -257,7 +256,6 @@ run_adq <- function(opts, areas,
 #' @param mcYears (numeric or vector of numeric) The Monte-Carlo years to
 #' extract from. The special value "all" extracts all Monte-Carlo Years.
 #' Default: "all"
-#' @param links_NTC_data NTC
 #' @param ptdf_FB_data ptdf
 #' @param capacity_FB_data capa
 #' @param ts_FB_data ts
@@ -269,7 +267,6 @@ run_adq <- function(opts, areas,
 adq_write <- function(sim_opts,
                       areas,
                       virtual_areas,
-                      links_NTC_data,
                       ptdf_FB_data,
                       capacity_FB_data,
                       ts_FB_data,
@@ -281,7 +278,6 @@ adq_write <- function(sim_opts,
   output <- apply_adq_patch(sim_opts = sim_opts,
                             areas = areas,
                             virtual_areas = virtual_areas,
-                            links_NTC_data = links_NTC_data,
                             ptdf_FB_data = ptdf_FB_data,
                             capacity_FB_data = capacity_FB_data,
                             ts_FB_data = ts_FB_data,
