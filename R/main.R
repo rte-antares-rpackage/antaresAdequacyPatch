@@ -234,7 +234,10 @@ run_adq <- function(opts, areas,
   
   ##Write mc all
   cat("Write mc all")
-  parAggregateMCall(opts, nbcl)
+  selected <- list(areas = areas, links = getLinks(areas, internalOnly = T), clusters = areas)
+  if (opts$antaresVersion >= 810 && opts$parameters$`other preferences`$`renewable-generation-modelling` == "clusters")
+    selected$clustersRes <- areas
+  parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
   .add_csv_digest(opts)
 
 }
