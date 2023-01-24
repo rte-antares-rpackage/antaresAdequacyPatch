@@ -3,7 +3,8 @@
 {
 	keys <- c("area", "mcYear", "timeId")
 	areas_new$LOLD <- 0
-	areas_new$LOLD[areas_new$`UNSP. ENRG` > 0] <- 1
+	areas_new$LOLD[areas_new$`UNSP. ENRG` > 1] <- 1
+	areas_new$LOLP <- areas_new$LOLD * 100
 
 	setkeyv(areas_new, keys)
 	setkeyv(areas_data, keys)
