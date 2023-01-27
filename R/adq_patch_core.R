@@ -271,9 +271,17 @@ adq_patch_core = function(patch_data, ts_FB_data,
       newnames
     }
   )
-  output <<- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
-  merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
+  output <- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
 
+  output <<- output[
+    , delta := max(abs(patch.net_position - post_patch.net_position)), by=c("patch.mcYear", "patch.timeId")
+  ][
+    delta > 5
+  ][
+    , delta := NULL
+  ]
+
+  output
 }
 
 
