@@ -70,7 +70,7 @@ removeAreas = function(patch_areas, areas_data,
 		by=link
 	]
 	interesting_links_data = interesting_links_data[  # Only selects links between a zone to remove and one to keep
-		(from %in% patch_areas & to %in% unused_areas) | (from %in% unused_areas & to %in% patch_areas)
+		(from %in% patch_areas & !(to %in% patch_areas)) | (!(from %in% patch_areas) & to %in% patch_areas)
 	]
 	interesting_links_data = interesting_links_data[  # Makes sure that the zones to keep are the destinations of all links
 		from %in% patch_areas,

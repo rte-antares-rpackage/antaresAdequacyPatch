@@ -58,10 +58,10 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 	# all_areas <- unique(c(areas, links_to_zone$from,links_to_zone$to))
 
 
-	links = antaresRead::getLinks(opts=sim_opts)
+	links = antaresRead::getLinks(areas, opts=sim_opts)
 
 	patch_data = antaresRead::readAntares(
-		areas=all_areas,
+		areas=areas,
 		links=links,
 		opts=sim_opts,
 		mcYears=mcYears,
