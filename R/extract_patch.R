@@ -50,13 +50,6 @@
 extract_patch = function(areas, virtual_areas, mcYears = "all",
 						 sim_opts=antaresRead::simOptions()) {
 
-	all_areas = antaresRead::getAreas(opts=sim_opts)
-
-	unused_areas = setdiff(all_areas, union(areas, virtual_areas))
-
-	# links_to_zone <- opts$linksDef[from %in% areas | to %in% areas]
-	# all_areas <- unique(c(areas, links_to_zone$from,links_to_zone$to))
-
 
 	links = antaresRead::getLinks(areas, opts=sim_opts)
 
@@ -67,12 +60,6 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 		mcYears=mcYears,
 		showProgress = FALSE
 	)
-
-	#True remove virtual areas
-	# patch_data = antaresRead::removeVirtualAreas(patch_data,
-	# 											 storageFlexibility = c(virtual_areas,
-	# 											 					   unused_areas),
-	# 											 newCols=FALSE)
 
 	patch_data = removeAreas(
 		areas,

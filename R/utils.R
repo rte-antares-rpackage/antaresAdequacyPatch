@@ -58,8 +58,6 @@ removeAreas = function(patch_areas, areas_data,
 					   links_data, add = FALSE,
 					   sim_opts=antaresRead::simOptions()) {
 
-	unused_areas = setdiff(getAreas(opts=sim_opts), patch_areas)
-
 	interesting_links_data = data.table::copy(links_data)[
 		,
 		c("time", "day", "month", "hour") := NULL
