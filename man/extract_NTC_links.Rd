@@ -7,7 +7,6 @@
 extract_NTC_links(
   areas = NULL,
   sim_opts = antaresRead::simOptions(),
-  set_capacity_one_to_infinite = T
 )
 }
 \arguments{
