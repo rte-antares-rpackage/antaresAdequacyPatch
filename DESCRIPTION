@@ -28,12 +28,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
 Imports:
 	data.table,
-	antaresRead (>= 2.2.6),
+	antaresRead (>= 2.4.2),
 	stats,
 	rAMPL,
 	doParallel,
 	plyr,
-	antaresEditObject,
+	antaresEditObject (>= 0.5.0),
 	fs,
 	pipeR
 Suggests: 
