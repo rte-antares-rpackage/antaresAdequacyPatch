@@ -229,15 +229,19 @@ run_adq <- function(opts, areas,
     stopCluster(cl)
   }
   
+  # prepare to recalculate only selected nodes/links
+  selected <- list(areas = areas, links = getLinks(areas, internalOnly = T), clusters = areas)
+  if (opts$antaresVersion >= 810 && opts$parameters$`other preferences`$`renewable-generation-modelling` == "clusters")
+    selected$clustersRes <- areas
   
-  computeTimeStampFromHourly(opts, nbcl = nbcl, type = c('areas', 'links'))
+  ##compute other timesteps mc-ind
+  computeOtherFromHourlyMulti(opts = opts, nbcl = nbcl, type = c('areas', 'links'), 
+                              writeOutput = T, areas = selected$areas)
   
   ##Write mc all
-
-  cat("Write mc all is disabled")
-  if(calculate_mc_all == T){
+  if(T | calculate_mc_all){
     cat("Write mc all")
-    parAggregateMCall(opts, nbcl)
+    parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
     .add_csv_digest(opts)
   }
 
