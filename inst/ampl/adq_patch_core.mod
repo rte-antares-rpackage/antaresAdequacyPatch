@@ -11,6 +11,9 @@ set CB;
 
 
 ### Parameters
+# Countries inside the fb zone but outside of the patch
+param out{all_countries} binary default 0;
+
 # Power Transmission and Distribution Flows, for each CB
 param PTDF{zone in FB_zones, CB, countries[zone]} default 0;
 # Capacity of each critical branch
@@ -20,7 +23,7 @@ param capacity{CB} >= 0 default 0;
 param DENS{all_countries} >= 0;
 # param DMRG{all_countries} >= 0;
 
-param D_available_energy{country in all_countries};# := DMRG[country] - DENS[country];
+param D_available_energy{all_countries};# := DMRG[country] - DENS[country];
 
 # Loss of load duration, in hours
 # Here, equivalent to boolean telling if the country is in LOL for the considered hour
@@ -66,8 +69,14 @@ subject to flow_based{cb in CB}:
 	sum{zone in FB_zones, country in countries[zone]} PTDF[zone, cb, country] * net_position[zone, country] <= capacity[cb] + 1;
 
 # Don't export if in LOL
-subject to local_matching{country in all_countries : LOLD[country] == 1}:
+subject to local_matching{country in all_countries : LOLD[country] == 1 and out[country] == 0}:
 	global_net_position[country] <= 0;
+	
+# Countries out shouldn't change
+subject to outside_adqp_up{country in all_countries : out[country] == 1}:
+  global_net_position[country] <= global_net_position_init[country] + 1;
+subject to outside_adqp_down{country in all_countries : out[country] == 1}:
+  global_net_position[country] >= global_net_position_init[country] - 1;
 
 # Can't export more than Antares
 # subject to de_optimization{country in all_countries : LOLD[country] == 0}:

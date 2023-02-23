@@ -63,6 +63,13 @@ adq_patch_core = function(patch_data, ts_FB_data,
   # Combine all ptdf
   ptdf_data = rbind(ptdf_FB_data, ptdf_NTC_data)
   
+  # Mark countries in the fb domain but out of the patch
+  countries_out <- ptdf_data[
+    ,
+    .(out = sapply(!(ptdf.country %in% unique(patch_data$patch.area)), as.integer)),
+    by=ptdf.country
+  ]
+
   # Create ids for string fields (because of rAMPL setData)
   zones_id = ptdf_data[, .(zone.id = .GRP), by=ptdf.zone]
   cb_id = merge(ptdf_data, zones_id, by = "ptdf.zone")[, .(zone.id = zone.id[[1]], cb.id = .GRP), by=ptdf.CB]
@@ -174,9 +181,22 @@ adq_patch_core = function(patch_data, ts_FB_data,
     )
   ]
   
+  countries_out = merge(
+    countries_id,
+    countries_out,
+    by=c("ptdf.country")
+  )[
+    ,
+    .(
+      country.id,  # AMPL set : all_countries
+      out  # AMPL parameter : out
+    )
+  ]
   
-  ampl$setData(ptdf, 3, "")  # PTDF are independent from time-step
-
+  
+  # AMPL data independent from time-step
+  ampl$setData(countries_out, 1, "")
+  ampl$setData(ptdf, 3, "")
   
   # Time-step by time-step resolution
   output = patch[
@@ -303,27 +323,28 @@ adq_patch_core = function(patch_data, ts_FB_data,
   
   ampl$solve()
   
-  # View(ampl$getData("
-  # 	{zone in FB_zones, country in countries[zone]} (
-  # 		net_position[zone, country]
-  # 	)
-  # "))
+  status <- ampl$getData("solve_result_num")
   
-  areas = ampl$getData("
-		{country in all_countries} (
-			ENS[country],
-			MRG[country],
-			global_net_position[country]
-		)
-	")
-  
-  links = ampl$getData("
-		{zone in FB_zones, country in countries[zone]} (
-			net_position[zone, country]
-		)
-	")
-  
-  links = data.table::dcast(data.table::setDT(links), index1 ~ index0, value.var="net_position.zone.country.")
-  
-  merge(areas, links, by.x="index0", by.y="index1")
+  if(status < 100) {
+    areas = ampl$getData("
+  		{country in all_countries} (
+  			ENS[country],
+  			MRG[country],
+  			global_net_position[country]
+  		)
+  	")
+      
+    links = ampl$getData("
+  		{zone in FB_zones, country in countries[zone]} (
+  			net_position[zone, country]
+  		)
+  	")
+    links = data.table::dcast(data.table::setDT(links), index1 ~ index0, value.var="net_position.zone.country.")
+    
+    output = merge(areas, links, by.x="index0", by.y="index1")
+  }
+  else {
+    output = NULL
+  }
+  output
 }

@@ -32,13 +32,17 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
                            capacity_FB_data = NULL,
                            ts_FB_data = NULL,
                            core_ahc) {
-  # cat("Import NTC \n")
-  links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts, mcYears=mcYears)
   
-  patch_data <- extract_patch(areas = areas,
+  areas_fb = union(areas, union(unique(ptdf_FB_data$ptdf.country), unique(ptdf_FB_data$ptdf.to)))
+  
+  # cat("Import NTC \n")
+  links_NTC_data = extract_NTC_links(areas=areas_fb, sim_opts=opts, mcYears=mcYears)
+  
+  patch_data <- extract_patch(areas = areas_fb,
                               virtual_areas = virtual_areas,
                               sim_opts = sim_opts,
                               mcYears = mcYears)
+  ptdf_FB_data[, ptdf.to := NULL]
   
   # patch_data = patch_data
   # ts_FB_data = ts_FB_data
