@@ -234,21 +234,47 @@ run_adq <- function(opts, areas,
   }
   
   # prepare to recalculate only selected nodes/links
-  selected <- list(areas = areas, links = getLinks(areas, internalOnly = T), clusters = areas)
-  if (opts$antaresVersion >= 810 && opts$parameters$`other preferences`$`renewable-generation-modelling` == "clusters")
-    selected$clustersRes <- areas
+  selected <- list(areas = areas, links = getLinks(areas, internalOnly = T))
   
-  ##compute other timesteps mc-ind
-  computeOtherFromHourlyMulti(opts = opts, nbcl = nbcl, type = c('areas', 'links'), 
-                              writeOutput = T, areas = selected$areas)
+  filteringData <- getGeographicTrimming(areas)
   
-  ##Write mc all
-  if(T | calculate_mc_all){
-    cat("Write mc all")
-    parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
-    .add_csv_digest(opts)
+  areasFiltering <- rbindlist(filteringData$areas, idcol = T)
+  linksFiltering <- rbindlist(filteringData$links, idcol = T)
+  
+  mc_all_timesteps <- unique(areasFiltering$`filter-synthesis`)
+  if (length(mc_all_timesteps) > 1){
+    areasFiltering <- sapply(unique(areasFiltering$`filter-synthesis`), 
+                             function(x){areasFiltering[`filter-synthesis` == x]$.id}, USE.NAMES = T)
+  } else {
+    areasFiltering <- list(x = areasFiltering$.id)
+    names(areasFiltering) <- mc_all_timesteps
+  }
+  areasFiltering$hourly <- NULL
+
+  ##compute other timesteps mc-ind areas
+  for (elmt in names(areasFiltering)){
+    ars <- areasFiltering[[elmt]]
+    elmt <- unlist(strsplit(elmt, ", "))
+    elmt <- elmt[!elmt %in% "hourly"]
+    computeOtherFromHourlyMulti(areas = ars, opts = opts, nbcl = nbcl, 
+                                type = c('areas'), writeOutput = T, timeStep = elmt)
   }
 
+  ##compute other timesteps mc-ind links
+  linksFiltering <- unique(unlist(strsplit(unique(linksFiltering$`filter-synthesis`),", ")))
+  linksFiltering <- linksFiltering[!linksFiltering %in% "hourly"]
+  computeOtherFromHourlyMulti(areas = areas, opts = opts, nbcl = nbcl, type = c('links'), 
+                              writeOutput = T, timeStep = linksFiltering)
+  
+  ##Write mc all
+  if(T || calculate_mc_all){
+    cat("Write mc all")
+    parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
+  }
+
+  #suppression selon getGeographicTrimming()
+  cleanUpOutput(areas)
+  
 }
 
 
