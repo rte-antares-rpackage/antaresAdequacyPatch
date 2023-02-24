@@ -272,10 +272,6 @@ run_adq <- function(opts, areas,
     cat("Write mc all")
     parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
   }
-
-  #suppression selon getGeographicTrimming()
-  cleanUpOutput(areas)
-  
 }
 
 
