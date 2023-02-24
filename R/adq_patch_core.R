@@ -39,7 +39,8 @@
 #'	ptdf_FB_data, links_NTC_data$ptdf
 #' )
 #' }
-adq_patch_core = function(patch_data, ts_FB_data,
+adq_patch_core = function(areas,
+                          patch_data, ts_FB_data,
                           capacity_FB_data, capacity_NTC_data,
                           ptdf_FB_data, ptdf_NTC_data, sim_opts) {
   
@@ -66,7 +67,7 @@ adq_patch_core = function(patch_data, ts_FB_data,
   # Mark countries in the fb domain but out of the patch
   countries_out <- ptdf_data[
     ,
-    .(out = sapply(!(ptdf.country %in% unique(patch_data$patch.area)), as.integer)),
+    .(out = sapply(!(ptdf.country %in% areas), as.integer)),
     by=ptdf.country
   ]
 

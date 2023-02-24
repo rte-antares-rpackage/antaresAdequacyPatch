@@ -56,6 +56,7 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
     if(core_ahc){
       
       out <- adq_patch_core(
+        areas = areas,
         patch_data = patch_data,
         ts_FB_data = ts_FB_data,
         capacity_FB_data = capacity_FB_data,
