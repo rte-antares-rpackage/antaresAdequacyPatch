@@ -34,6 +34,7 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
                            core_ahc) {
   
   areas_fb = union(areas, union(unique(ptdf_FB_data$ptdf.country), unique(ptdf_FB_data$ptdf.to)))
+  ptdf_FB_data[, ptdf.to := NULL]
   
   # cat("Import NTC \n")
   links_NTC_data = extract_NTC_links(areas=areas_fb, sim_opts=opts, mcYears=mcYears)
@@ -42,7 +43,6 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
                               virtual_areas = virtual_areas,
                               sim_opts = sim_opts,
                               mcYears = mcYears)
-  ptdf_FB_data[, ptdf.to := NULL]
   
   # patch_data = patch_data
   # ts_FB_data = ts_FB_data
@@ -178,11 +178,12 @@ run_adq <- function(opts, areas,
   } else {
     ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
   }
+  areas_fb = union(areas, union(unique(ptdf_FB_data$ptdf.country), unique(ptdf_FB_data$ptdf.to)))
   cat("Import FB capacity \n")
   capacity_FB_data = extract_FB_capacity(sim_opts=opts)
   cat("Import FB time series \n")
   ts_FB_data = extract_FB_ts(sim_opts=opts)
-  
+
   
   cat("Compute ADQ \n")
   
@@ -235,9 +236,9 @@ run_adq <- function(opts, areas,
   }
   
   # prepare to recalculate only selected nodes/links
-  selected <- list(areas = areas, links = getLinks(areas, internalOnly = T))
+  selected <- list(areas = areas, links = getLinks(areas_fb, internalOnly = T))
   
-  filteringData <- getGeographicTrimming(areas)
+  filteringData <- getGeographicTrimming(areas_fb)
   
   areasFiltering <- rbindlist(filteringData$areas, idcol = T)
   linksFiltering <- rbindlist(filteringData$links, idcol = T)
@@ -264,8 +265,8 @@ run_adq <- function(opts, areas,
   ##compute other timesteps mc-ind links
   linksFiltering <- unique(unlist(strsplit(unique(linksFiltering$`filter-synthesis`),", ")))
   linksFiltering <- linksFiltering[!linksFiltering %in% "hourly"]
-  computeOtherFromHourlyMulti(areas = areas, opts = opts, nbcl = nbcl, type = c('links'), 
-                              writeOutput = T, timeStep = linksFiltering)
+  computeOtherFromHourlyMulti(areas = areas_fb, opts = opts, nbcl = nbcl, type = c('links'), 
+                                writeOutput = T, timeStep = linksFiltering)
   
   ##Write mc all
   if(T || calculate_mc_all){
