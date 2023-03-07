@@ -295,7 +295,12 @@ adq_patch_core = function(areas,
   output <- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
 
   output <- output[
-    , delta := max(abs(patch.net_position - post_patch.net_position)), by=c("patch.mcYear", "patch.timeId")
+    ,
+    delta := min(.SD[
+      patch.ENS > 0,
+      .(abs(patch.net_position - post_patch.net_position))
+    ]),
+    by=c("patch.mcYear", "patch.timeId")
   ][
     delta > 5
   ][
