@@ -235,80 +235,86 @@ adq_patch_core = function(areas,
   # 		post_patch.net_pos = round(net_pos.country., digits=0)
   # 	)
   # ]
-  output = merge(countries_id, output, by.x="country.id", by.y="index0")[
-    ,
-    c(
-      "patch.area",
-      "post_patch.MRG",
-      "post_patch.ENS",
-      "post_patch.net_position",
-      
-      
-      "ptdf.country",
-      "MRG.country.",
-      "ENS.country.",
-      "global_net_position.country.",
-      "country.id"
-    ) := .(
-      ptdf.country,
-      round(MRG.country., digits=0),
-      round(ENS.country., digits=0),
-      round(global_net_position.country., digits=0),
-      
-      
-      NULL,
-      NULL,
-      NULL,
-      NULL,
-      NULL
-    )
-  ][
-    ,
-    min_MRG_ENS := pmin(post_patch.MRG, post_patch.ENS)
-  ][
-    ,
-    c(
-      "post_patch.MRG",
-      "post_patch.ENS",
-      
-      "min_MRG_ENS"
-    ) := .(
-      post_patch.MRG - min_MRG_ENS,
-      post_patch.ENS - min_MRG_ENS,
-      
-      NULL
-    )
-  ]
-  data.table::setnames(
-    output,
-    function(colnames) {
-      newnames = c()
-      for (colname in colnames) {
-        if (!(colname %in% c("patch.mcYear", "patch.Date", "patch.timeId", "patch.area", "post_patch.MRG", "post_patch.ENS", "post_patch.net_position")))
-          newnames = c(newnames, zones_id[zone.id == colname, ptdf.zone])
-        else
-          newnames = c(newnames, colname)
+  
+  if(nrow(output) > 0) {
+    output = merge(countries_id, output, by.x="country.id", by.y="index0")[
+      ,
+      c(
+        "patch.area",
+        "post_patch.MRG",
+        "post_patch.ENS",
+        "post_patch.net_position",
+        
+        
+        "ptdf.country",
+        "MRG.country.",
+        "ENS.country.",
+        "global_net_position.country.",
+        "country.id"
+      ) := .(
+        ptdf.country,
+        round(MRG.country., digits=0),
+        round(ENS.country., digits=0),
+        round(global_net_position.country., digits=0),
+        
+        
+        NULL,
+        NULL,
+        NULL,
+        NULL,
+        NULL
+      )
+    ][
+      ,
+      min_MRG_ENS := pmin(post_patch.MRG, post_patch.ENS)
+    ][
+      ,
+      c(
+        "post_patch.MRG",
+        "post_patch.ENS",
+        
+        "min_MRG_ENS"
+      ) := .(
+        post_patch.MRG - min_MRG_ENS,
+        post_patch.ENS - min_MRG_ENS,
+        
+        NULL
+      )
+    ]
+    data.table::setnames(
+      output,
+      function(colnames) {
+        newnames = c()
+        for (colname in colnames) {
+          if (!(colname %in% c("patch.mcYear", "patch.Date", "patch.timeId", "patch.area", "post_patch.MRG", "post_patch.ENS", "post_patch.net_position")))
+            newnames = c(newnames, zones_id[zone.id == colname, ptdf.zone])
+          else
+            newnames = c(newnames, colname)
+        }
+        newnames
       }
-      newnames
-    }
-  )
-  output <- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
-
-  output <- output[
-    ,
-    delta := min(.SD[
-      patch.ENS > 0,
-      .(abs(patch.net_position - post_patch.net_position))
-    ]),
-    by=c("patch.mcYear", "patch.timeId")
-  ][
-    delta > 5
-  ][
-    , delta := NULL
-  ]
-  optim_out <<- copy(output)
-
-  output
+    )
+    output <- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
+  
+    output <- output[
+      ,
+      delta := min(.SD[
+        patch.ENS > 0,
+        .(abs(patch.net_position - post_patch.net_position))
+      ]),
+      by=c("patch.mcYear", "patch.timeId")
+    ][
+      delta > 5
+    ][
+      , delta := NULL
+    ]
+    optim_out <<- copy(output)
+  
+    output
+  }
+  else {
+    return(NULL)
+  }
 }
 
 
