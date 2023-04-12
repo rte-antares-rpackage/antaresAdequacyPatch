@@ -44,6 +44,11 @@ adq_patch_core = function(areas,
                           capacity_FB_data, capacity_NTC_data,
                           ptdf_FB_data, ptdf_NTC_data, sim_opts) {
   
+  profiling = F
+  if (current_mcYear_profiling == sim_opts$mcYears[1]){
+    profiling = T
+    print("one detailed adq_patch_core iteration perf. times :")
+  }
   # Remove NTC links already in FB
   used_link = function(link_name, FB_countries) {
     from_to = strsplit(link_name, " - ")[[1]]
@@ -61,6 +66,7 @@ adq_patch_core = function(areas,
   # 											   function(link_name){
   # 											   	used_link(link_name, FB_countries)}))]
   
+  tq <- Sys.time()
   # Combine all ptdf
   ptdf_data = rbind(ptdf_FB_data, ptdf_NTC_data)
   
@@ -76,8 +82,10 @@ adq_patch_core = function(areas,
   cb_id = merge(ptdf_data, zones_id, by = "ptdf.zone")[, .(zone.id = zone.id[[1]], cb.id = .GRP), by=ptdf.CB]
   
   countries_id = ptdf_data[, .(country.id = .GRP), by=ptdf.country]
+  if (profiling) print(c("getlinks+ptdf+1 merge", Sys.time() - tq))
   
   
+  tq <- Sys.time()
   # Sets up AMPL
   ampl = new(rAMPL::AMPL)
   
@@ -102,9 +110,12 @@ adq_patch_core = function(areas,
   for(zone in countries_per_zone$zone.id){
     countries_set$get(zone)$setValues(unique(countries_per_zone[zone.id == zone, country.id]))
   }
+  if (profiling) print(c("ampl part", Sys.time() - tq))
+  
   
   # Sends data to AMPL parameters
   
+  tq <- Sys.time()
   # Replaces zones, CB and countries names by ids
   ptdf = merge(
     merge(
@@ -125,7 +136,10 @@ adq_patch_core = function(areas,
       PTDF = ptdf.PTDF  # AMPL parameter : PTDF
     )
   ]
+  if (profiling) print(c("triple merge ptdf", Sys.time() - tq))
   
+  
+  tq <- Sys.time()
   # Replaces zones and CB names by ids
   capacity_FB = merge(
     merge(
@@ -145,7 +159,9 @@ adq_patch_core = function(areas,
       capacity = capacity.capacity  # AMPL parameter : capacity
     )
   ]
+  if (profiling) print(c("double merge FB", Sys.time() - tq))
   
+  tq <- Sys.time()
   capacity_NTC = merge(
     merge(
       zones_id,
@@ -165,7 +181,9 @@ adq_patch_core = function(areas,
       capacity = capacity.capacity  # AMPL parameter : capacity
     )
   ]
+  if (profiling) print(c("double merge NTC", Sys.time() - tq))
   
+  tq <- Sys.time()
   # Replaces countries names by ids
   patch = merge(
     patch_data,
@@ -193,12 +211,14 @@ adq_patch_core = function(areas,
       out  # AMPL parameter : out
     )
   ]
+  if (profiling) print(c("single merge", Sys.time() - tq))
   
   
   # AMPL data independent from time-step
   ampl$setData(countries_out, 1, "")
   ampl$setData(ptdf, 3, "")
   
+  tq <- Sys.time()
   # Time-step by time-step resolution
   output = patch[
     , .single_time_step_core(ampl,
@@ -222,6 +242,7 @@ adq_patch_core = function(areas,
                                                 )
                                    ])), 
     by=.(patch.mcYear, patch.Date, patch.timeId)]
+  if (profiling) print(c("single time step core + multimerge (main ampl function)", Sys.time() - tq))
   
   ampl$close()
   
@@ -235,6 +256,7 @@ adq_patch_core = function(areas,
   # 		post_patch.net_pos = round(net_pos.country., digits=0)
   # 	)
   # ]
+  tq <- Sys.time()
   output = merge(countries_id, output, by.x="country.id", by.y="index0")[
     ,
     c(
@@ -301,6 +323,8 @@ adq_patch_core = function(areas,
   ][
     , delta := NULL
   ]
+  if (profiling) print(c("long merge + data table brackets succession", Sys.time() - tq))
+  
   optim_out <<- copy(output)
 
   output
