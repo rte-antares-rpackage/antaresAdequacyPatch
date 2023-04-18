@@ -1,22 +1,22 @@
-# #Copyright © 2016 RTE Réseau de transport d’électricité
-# 
-# # Copy the test study in a temporary folder
-# 
-# path0 <- tempdir()
-# 
-# sourcedir <- system.file("inst/testdata", package = "AdequacyPatch")
-# 
-# 
-# if(sourcedir == ""){ sourcedir <- system.file("testdata", package = "AdequacyPatch")}
-# 
+#Copyright © 2016 RTE Réseau de transport d’électricité
+
+# Copy the test study in a temporary folder
+
+path0 <- tempdir()
+
+sourcedir <- system.file("inst/testdata", package = "AdequacyPatch")
+
+
+if(sourcedir == ""){ sourcedir <- system.file("testdata", package = "AdequacyPatch")}
+
 # if (length(strsplit(packageDescription("antaresRead")$Version, "\\.")[[1]]) > 3) {
 #   Sys.setenv("RunAllAntaresReadTests"="yes")
 # }
-# 
-# 
-# # Hack: For some unknown reason, this script is executed at some point of
-# # the R CMD CHECK before package is correctly installed and tests actually run.
-# # The following "if" prevents errors at this step
+
+
+# Hack: For some unknown reason, this script is executed at some point of
+# the R CMD CHECK before package is correctly installed and tests actually run.
+# The following "if" prevents errors at this step
 # if (sourcedir != "") {
 # 
 #   studies <- list.files(
@@ -44,3 +44,12 @@
 #   assign("firstDay", 113, envir = globalenv())
 #   assign("lastDay", 126, envir = globalenv())
 # }
+# study ----
+sourcedir <- system.file("testdata", package = "AdequacyPatch")
+studies <- list.files(sourcedir, pattern = "\\.tar\\.gz$", full.names = TRUE)
+studies <- studies[grep(x = studies, pattern = "v85")]
+
+# untar etude
+path_850 <- file.path(tempdir(), "studyv850")
+untar(studies[1], exdir = path_850) # v85
+study_temp_path <- file.path(path_850, "test_case")
