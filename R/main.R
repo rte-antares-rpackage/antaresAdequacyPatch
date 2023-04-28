@@ -115,7 +115,7 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
 #'
 #' @export
 #'
-#' @import doParallel plyr antaresEditObject fs antaresRead pipeR
+#' @import doParallel plyr antaresEditObject fs antaresRead pipeR rlog data.table
 #'
 #' @examples
 #' \dontrun{

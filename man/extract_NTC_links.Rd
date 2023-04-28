@@ -7,6 +7,7 @@
 extract_NTC_links(
   areas = NULL,
   sim_opts = antaresRead::simOptions(),
+  mcYears = NULL
 )
 }
 \arguments{
@@ -14,6 +15,8 @@ extract_NTC_links(
 extract the links.}
 
 \item{sim_opts}{(list) Simulation options as given by antaresRead::setSimulationPath}
+
+\item{mcYears}{(integer) vector of years to read}
 }
 \value{
 (list) such that $capacity is a data.table containing the maximum

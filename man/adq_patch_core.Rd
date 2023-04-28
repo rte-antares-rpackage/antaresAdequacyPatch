@@ -6,6 +6,7 @@
 constrained by the flow_based and NTC data.}
 \usage{
 adq_patch_core(
+  areas,
   patch_data,
   ts_FB_data,
   capacity_FB_data,
