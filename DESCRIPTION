@@ -35,7 +35,8 @@ Imports:
 	plyr,
 	antaresEditObject (>= 0.5.0),
 	fs,
-	pipeR
+	pipeR,
+	rlog
 Suggests: 
     testthat,
     knitr,

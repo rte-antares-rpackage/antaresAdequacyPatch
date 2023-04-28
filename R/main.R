@@ -174,27 +174,24 @@ run_adq <- function(opts, areas,
   
   # cat("Import NTC \n")
   # links_NTC_data = extract_NTC_links(areas=areas, sim_opts=opts)
-  cat("Import PTDF \n")
-  t <- Sys.time()
+  log_info("Import PTDF")
   if(core_ahc){
     ptdf_FB_data = extract_ptdf_core(sim_opts=opts)
   } else {
     ptdf_FB_data = extract_FB_ptdf(sim_opts=opts)
   }
   areas_fb = union(areas, union(unique(ptdf_FB_data$ptdf.country), unique(ptdf_FB_data$ptdf.to)))
-  print(c("ptdf", Sys.time() - t))
+  log_info("End of import ptdf")
   
-  cat("Import FB capacity \n")
-  t <- Sys.time()
+  log_info("Import FB capacity")
   capacity_FB_data = extract_FB_capacity(sim_opts=opts)
-  print(c("FB capacity", Sys.time() - t))
+  log_info("End of FB capacity import")
   
-  cat("Import FB time series \n")
-  t <- Sys.time()
+  log_info("Import FB time series")
   ts_FB_data = extract_FB_ts(sim_opts=opts)
-  print(c("FB ts", Sys.time() - t))
+  log_info("End of FB ts")
   
-  cat("Compute ADQ \n")
+  log_info("Compute ADQ")
   
   if(nbcl>1){
     parallel <- TRUE
@@ -220,8 +217,7 @@ run_adq <- function(opts, areas,
     registerDoParallel(cl)
     
   }
-  
-  t <- Sys.time()
+  log_info("Start write study by mc year")
   llply(mcYears,
         .fun = function(mcYear){
           adq_write(sim_opts = opts,
@@ -240,14 +236,14 @@ run_adq <- function(opts, areas,
         .paropts = list(.options.snow = list(preschedule = TRUE)),
         .progress = "text"
   )
-  print(c(length(mcYears), "years in adqp with llply", Sys.time() - t))
+  log_info(paste0(length(mcYears), " years in adqp with llply"))
   
   
   if(parallel){
     stopCluster(cl)
   }
   
-  t <- Sys.time()
+  log_info("prepare to recalculate only selected nodes/links")
   # prepare to recalculate only selected nodes/links
   selected <- list(areas = areas, links = getLinks(areas_fb, internalOnly = T))
   
@@ -265,10 +261,9 @@ run_adq <- function(opts, areas,
     names(areasFiltering) <- mc_all_timesteps
   }
   areasFiltering$hourly <- NULL
-  print(c("prepare aggreg filtering (profiling)", Sys.time() - t))
+  log_info("prepare aggreg filtering (profiling)")
   
-
-  t <- Sys.time()
+  log_info("compute other timesteps mc-ind areas")
   ##compute other timesteps mc-ind areas
   for (elmt in names(areasFiltering)){
     ars <- areasFiltering[[elmt]]
@@ -277,24 +272,23 @@ run_adq <- function(opts, areas,
     computeOtherFromHourlyMulti(areas = ars, opts = opts, nbcl = nbcl, 
                                 type = c('areas'), writeOutput = T, timeStep = elmt)
   }
-  print(c("mc-ind aggreg areas (profiling)", Sys.time() - t))
+  log_info("mc-ind aggreg areas (profiling)")
   
-
-  t <- Sys.time()
+  log_info("compute other timesteps mc-ind links")
   ##compute other timesteps mc-ind links
   linksFiltering <- unique(unlist(strsplit(unique(linksFiltering$`filter-synthesis`),", ")))
   linksFiltering <- linksFiltering[!linksFiltering %in% "hourly"]
   computeOtherFromHourlyMulti(areas = areas_fb, opts = opts, nbcl = nbcl, type = c('links'), 
                                 writeOutput = T, timeStep = linksFiltering)
-  print(c("mc-ind aggreg links (profiling)", Sys.time() - t))
+  log_info("mc-ind aggreg links (profiling)")
   
-  t <- Sys.time()
+  log_info("Write mc all")
   ##Write mc all
   if(T || calculate_mc_all){
     cat("Write mc all")
     parAggregateMCall(opts, nbcl, filtering = T, selected = selected)
   }
-  print(c("mc-all aggreg (profiling)", Sys.time() - t))
+  log_info("mc-all aggreg (profiling)")
   
 }
 
@@ -333,9 +327,8 @@ adq_write <- function(sim_opts,
   profiling <- F
   if (mcYears == sim_opts$mcYears[1]){
     profiling <- T
-    print("Checking time perf. for one iteration :")
+    log_info("Checking time perf. for one iteration :")
   }
-  tq <- Sys.time()
   output <- apply_adq_patch(sim_opts = sim_opts,
                             areas = areas,
                             virtual_areas = virtual_areas,
@@ -344,48 +337,44 @@ adq_write <- function(sim_opts,
                             ts_FB_data = ts_FB_data,
                             mcYears = mcYears,
                             core_ahc = core_ahc)
-  if (profiling) print(c("-- apply adq patch (main)", Sys.time() - tq))
+  if (profiling) log_info("-- apply adq patch (main)")
   
   if(!is.null(output)){
 
-    tq <- Sys.time()
     areas_data <- readAntares(areas = areas, mcYears = mcYears, showProgress = FALSE)
-    if (profiling) print(c("readAntares Areas", Sys.time() - tq))
+    if (profiling) log_info("readAntares Areas")
     
-    tq <- Sys.time()
     output <- .transformOutput(output, antaresfbzone)
-    if (profiling) print(c("transform output", Sys.time() - tq))
-    
-    tq <- Sys.time()
+    if (profiling) log_info("transform output")
+   
     links_data <- readAntares(links = getLinks(areas), mcYears = mcYears, showProgress = FALSE)
-    if (profiling) print(c("readAntares Links", Sys.time() - tq))
+    if (profiling) log_info("readAntares Links")
     
     
     ###Filter to important modification
-    tq <- Sys.time()
+    log_info("Filter to important modification")
     output$areas <- removeAreas(unique(c(output$areas$area, antaresfbzone)), output$areas, links_data, add=TRUE, sim_opts = sim_opts)
     
     ##Filtering
-    tq <- Sys.time()
+    log_info("Start Filtering")
     tpmerge <- merge(areas_data, output$areas, by = c("area", "mcYear", "timeId"))
     out <- tpmerge[, .(av = sum(`UNSP. ENRG.x`), ap = sum(`UNSP. ENRG.y`)), by = c("mcYear", "timeId")]
     outexclude <- out[av - ap > -thresholdFilter]
     outexclude$av <- outexclude$ap <- NULL
     output$areas <- merge(output$areas, outexclude, by = c("mcYear", "timeId"))
     output$links <- merge(output$links, outexclude, by = c("mcYear", "timeId"))
-    if (profiling) print(c("filtering merge", Sys.time() - tq))
+    if (profiling) log_info("filtering merge")
+    log_info("End Filtering")
     ##End filtering
     
-    tq <- Sys.time()
     .write_adq_area(sim_opts, areas_data, output, links_data, unique(output$areas$area))
-    if (profiling) print(c("write area", Sys.time() - tq))
+    if (profiling) log_info("write area")
 
     links_data$from <- NULL
     links_data$to <- NULL
     links_data <- links_data[link%in%unique(output$links$link)]
-    tq <- Sys.time()
     .write_adq_link(sim_opts, links_data, output)
-    if (profiling) print(c("write link", Sys.time() - tq))
+    if (profiling) log_info("write link")
     
   }
 }
