@@ -65,6 +65,8 @@ adq_patch_core = function(areas,
   # capacity_NTC_data = capacity_NTC_data[!(sapply(capacity.zone,
   # 											   function(link_name){
   # 											   	used_link(link_name, FB_countries)}))]
+  logger <- layout_glue_generator(format = '[{format(time, \"%Y-%m-%d %H:%M:%S\")}][adq][{level}] {msg}')
+  log_layout(logger)
   
   log_info("Start combine all ptdf")
   # Combine all ptdf
@@ -110,7 +112,7 @@ adq_patch_core = function(areas,
   for(zone in countries_per_zone$zone.id){
     countries_set$get(zone)$setValues(unique(countries_per_zone[zone.id == zone, country.id]))
   }
-  if (profiling) log_info("ampl part")
+  if (profiling) log_info("AMPL treatment")
   
   
   # Sends data to AMPL parameters

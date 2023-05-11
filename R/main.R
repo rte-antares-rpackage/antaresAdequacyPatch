@@ -115,7 +115,7 @@ apply_adq_patch = function(sim_opts=antaresRead::simOptions(),
 #'
 #' @export
 #'
-#' @import doParallel plyr antaresEditObject fs antaresRead pipeR rlog data.table
+#' @import doParallel plyr antaresEditObject fs antaresRead pipeR logger data.table
 #'
 #' @examples
 #' \dontrun{
@@ -138,7 +138,11 @@ run_adq <- function(opts, areas,
                     core_ahc = F,
                     calculate_mc_all = TRUE){
   
+  logger <- layout_glue_generator(format = '[{format(time, \"%Y-%m-%d %H:%M:%S\")}][adq][{level}] {msg}')
+  log_layout(logger)
+  log_info("ADEQUACY PATCH Starting Treatment")
   
+  startTime <- Sys.time()
   
   if(!is.null(ext)){
     if(is.na(ext)){
@@ -290,6 +294,9 @@ run_adq <- function(opts, areas,
   }
   log_info("mc-all aggreg (profiling)")
   
+  endTime <- Sys.time() - startTime
+  log_info(paste0("Treatment adq total duration: ", round(endTime,2)))
+  log_info("ADEQUACY PATCH End of Treatment")
 }
 
 
