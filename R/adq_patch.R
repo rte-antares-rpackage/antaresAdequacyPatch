@@ -41,7 +41,7 @@
 #' }
 adq_patch = function(patch_data, ts_FB_data,
 					 capacity_FB_data, capacity_NTC_data,
-					 ptdf_FB_data, ptdf_NTC_data) {
+					 ptdf_FB_data, ptdf_NTC_data, sim_opts) {
 
 	# Remove NTC links already in FB
 	used_link = function(link_name, FB_countries) {
@@ -52,11 +52,8 @@ adq_patch = function(patch_data, ts_FB_data,
 		from %in% FB_countries & to %in% FB_countries
 	}
 
-	FB_countries = unique(ptdf_FB_data[, ptdf.country])
-
-	ptdf_NTC_data = ptdf_NTC_data[
-		!(sapply(ptdf.zone, function(link_name){used_link(link_name, FB_countries)}))
-	]
+	FB_links <- getLinks(areas = "zz_flowbased", opts = sim_opts)
+	ptdf_NTC_data = ptdf_NTC_data[!ptdf.zone %in% FB_links]
 
 
 	# capacity_NTC_data = capacity_NTC_data[!(sapply(capacity.zone,
@@ -72,7 +69,6 @@ adq_patch = function(patch_data, ts_FB_data,
 
 	countries_id = ptdf_data[, .(country.id = .GRP), by=ptdf.country]
 
-
 	# Sets up AMPL
 	ampl = new(rAMPL::AMPL)
 
@@ -81,7 +77,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	ampl$setOption("solver", "amplxpress")
 	ampl$setOption("presolve", 1)
 
-	ampl$read(system.file("ampl/adq_patch.mod", package = "AdequacyPatch"))
+	ampl$read(system.file("ampl/adq_patch_cwe.mod", package = "AdequacyPatch"))
 
 
 	# Sends data to AMPL sets
@@ -156,6 +152,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	)[
 		,
 		.(
+		  capacity.mcYear, #V8.2
 			capacity.timeId,
 			zone.id, cb.id,  # AMPL sets : FB_zones, CB[zone]
 			capacity = capacity.capacity  # AMPL parameter : capacity
@@ -181,37 +178,30 @@ adq_patch = function(patch_data, ts_FB_data,
 
 	ampl$setData(ptdf, 3, "")  # PTDF are independent from time-step
 
+
 	# Time-step by time-step resolution
 	output = patch[
-		,
-		.single_time_step(
-			ampl,
-			.SD,
-			rbind(
-				capacity_FB[  # For each CB, selects the right capacity depending on typical day and hour
-					capacity.typical_day ==
-						ts_FB_data[
-							ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.Date,
-							ts.typical_day
-						]
-
-					& capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
-					.(
-						zone.id, cb.id,
-						capacity
-					)
-				],
-				capacity_NTC[
-					capacity.timeId == patch.timeId,
-					.(
-						zone.id, cb.id,
-						capacity
-					)
-				]
-			)
-		),
-		by=.(patch.mcYear, patch.Date, patch.timeId)
-	]
+	  , 	.single_time_step(ampl,
+	                       .SD, 	# For each CB, selects the right capacity depending on typical day and hour
+	                       rbind(capacity_FB[capacity.typical_day ==
+	                                           ts_FB_data[
+	                                             ts.mcYear == ((patch.mcYear - 1) %% length(unique(ts_FB_data$ts.mcYear))) + 1 & ts.Date == patch.Date,
+	                                             ts.typical_day
+	                                           ]
+	                                         
+	                                         & capacity.Id_hour == (patch.timeId - 1) %% 24 + 1,
+	                                         .(
+	                                           zone.id, cb.id,
+	                                           capacity
+	                                         )
+	                       ],
+	                       capacity_NTC[capacity.timeId == patch.timeId & capacity.mcYear == patch.mcYear, #V8.2
+	                                    .(
+	                                      zone.id, cb.id,
+	                                      capacity
+	                                    )
+	                       ])), 
+	  by=.(patch.mcYear, patch.Date, patch.timeId)]
 
 	ampl$close()
 
@@ -284,6 +274,7 @@ adq_patch = function(patch_data, ts_FB_data,
 	)
 	output <<- merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
 	merge(patch_data, output, by=c("patch.mcYear", "patch.timeId", "patch.Date", "patch.area"))
+	
 }
 
 

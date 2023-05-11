@@ -3,7 +3,8 @@
 {
 	keys <- c("area", "mcYear", "timeId")
 	areas_new$LOLD <- 0
-	areas_new$LOLD[areas_new$`UNSP. ENRG` > 0] <- 1
+	areas_new$LOLD[areas_new$`UNSP. ENRG` > 1] <- 1
+	areas_new$LOLP <- areas_new$LOLD * 100
 
 	setkeyv(areas_new, keys)
 	setkeyv(areas_data, keys)
@@ -16,7 +17,7 @@
 
 	setnames(areas_data, "BALANCE", "BAL")
 	setnames(areas_new, "BALANCE", "BAL")
-	areas_data[areas_new, `:=`( DTM = i.DTM, NSPE = i.NSPE, BAL = i.BAL, LOLD = i.LOLD, PSP = i.PSP)]
+	areas_data[areas_new, `:=`( DTM = i.DTM, NSPE = i.NSPE, BAL = i.BAL, LOLD = i.LOLD, LOLP = i.LOLP, PSP = i.PSP)]
 	setnames(areas_data,  "DTM", "SPIL. ENRG")
 	setnames(areas_data,  "NSPE", "UNSP. ENRG")
 	setnames(areas_data,  "BAL", "BALANCE")

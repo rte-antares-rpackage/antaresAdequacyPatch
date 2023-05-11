@@ -4,7 +4,7 @@
 
 path0 <- tempdir()
 
-sourcedir <- system.file("inst/testdata", package = "AdequacyPatch")
+sourcedir <- system.file("testdata", package = "AdequacyPatch")
 
 
 if(sourcedir == ""){ sourcedir <- system.file("testdata", package = "AdequacyPatch")}

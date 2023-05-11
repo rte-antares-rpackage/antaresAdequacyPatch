@@ -3,6 +3,7 @@
 #' @param areas (string or vector of strings) Areas between which we want to
 #'	extract the links.
 #' @param sim_opts (list) Simulation options as given by antaresRead::setSimulationPath
+#' @param mcYears (integer) vector of years to read
 #'
 #' @return (list) such that $capacity is a data.table containing the maximum
 #'	transfer capacity for each link (divided in Direct and Indirect)
@@ -18,18 +19,25 @@
 #'
 #' links_NTC_data = extract_NTC_links(areas=areas, sim_opts=sim_opts)
 #' }
-extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions()) {
+extract_NTC_links = function(areas=NULL, sim_opts=antaresRead::simOptions(), mcYears = NULL) {
 
-	links = antaresRead::getLinks(areas, internalOnly=TRUE)
-
-	links_data = antaresRead::readInputTS(linkCapacity=links, opts=sim_opts)[
-		,
-		.(timeId, zone = link, transCapacityDirect, transCapacityIndirect)
+	links = antaresRead::getLinks(areas, internalOnly=TRUE, withTransmission=T, namesOnly=F)[
+	  ,
+	  .(link, transmission)
+	]
+	
+	links_data = antaresRead::readAntares(linkCapacity=TRUE, links=links$link, mcYear = mcYears, opts=sim_opts)[
+	  ,
+	  .(mcYear, timeId, zone = link, transCapacityDirect, transCapacityIndirect)
 	]
 
+	links_data = merge(links_data, links, by.x="zone", by.y="link")
+  links_data[transmission == "ignore", c("transCapacityDirect", "transCapacityIndirect") := 0]
+  links_data[transmission == "infinite",  c("transCapacityDirect", "transCapacityIndirect") := 99999]
+	
 	links_data = data.table::melt(
 		links_data,
-		id.vars=c("timeId", "zone"),
+		id.vars=c("mcYear", "timeId", "zone"),
 		measure.vars=c("transCapacityDirect", "transCapacityIndirect"),
 		variable.name="CB",
 		value.name="capacity"

@@ -8,13 +8,13 @@ adq_write(
   sim_opts,
   areas,
   virtual_areas,
-  links_NTC_data,
   ptdf_FB_data,
   capacity_FB_data,
   ts_FB_data,
   mcYears,
   antaresfbzone,
-  thresholdFilter
+  thresholdFilter,
+  core_ahc
 )
 }
 \arguments{
@@ -25,8 +25,6 @@ be applied on. Default: ""}
 
 \item{virtual_areas}{(string or vector of strings) Virtual areas of the study,
 excluded from the patch. Default: NULL}
-
-\item{links_NTC_data}{NTC}
 
 \item{ptdf_FB_data}{ptdf}
 

@@ -9,10 +9,10 @@ apply_adq_patch(
   areas = "all",
   virtual_areas = NULL,
   mcYears = "all",
-  links_NTC_data = NULL,
   ptdf_FB_data = NULL,
   capacity_FB_data = NULL,
-  ts_FB_data = NULL
+  ts_FB_data = NULL,
+  core_ahc
 )
 }
 \arguments{
@@ -27,8 +27,6 @@ excluded from the patch. Default: NULL}
 \item{mcYears}{(numeric or vector of numeric) The Monte-Carlo years to
 extract from. The special value "all" extracts all Monte-Carlo Years.
 Default: "all"}
-
-\item{links_NTC_data}{links_NTC_data}
 
 \item{ptdf_FB_data}{ptdf_FB_data}
 

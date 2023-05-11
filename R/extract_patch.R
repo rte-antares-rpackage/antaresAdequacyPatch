@@ -50,30 +50,16 @@
 extract_patch = function(areas, virtual_areas, mcYears = "all",
 						 sim_opts=antaresRead::simOptions()) {
 
-	all_areas = antaresRead::getAreas(opts=sim_opts)
 
-	unused_areas = setdiff(all_areas, union(areas, virtual_areas))
-
-	# links_to_zone <- opts$linksDef[from %in% areas | to %in% areas]
-	# all_areas <- unique(c(areas, links_to_zone$from,links_to_zone$to))
-
-
-	links = antaresRead::getLinks(opts=sim_opts)
+	links = antaresRead::getLinks(areas, opts=sim_opts)
 
 	patch_data = antaresRead::readAntares(
-		areas=all_areas,
+		areas=areas,
 		links=links,
 		opts=sim_opts,
 		mcYears=mcYears,
 		showProgress = FALSE
 	)
-
-
-	#True remove virtual areas
-	# patch_data = antaresRead::removeVirtualAreas(patch_data,
-	# 											 storageFlexibility = c(virtual_areas,
-	# 											 					   unused_areas),
-	# 											 newCols=FALSE)
 
 	patch_data = removeAreas(
 		areas,
@@ -89,13 +75,18 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 
 	# patch_data = patch_data$areas[area %in% areas]
 	patch_data = patch_data[area %in% areas]
-
+	
 	patch_data = patch_data[
 		patch_data[
 			,
 			patch := max(`UNSP. ENRG`) > 0,
 			by=.(mcYear, timeId)
 		][, patch]
+	][
+	  , `ALL MISC. DTG` := rowSums(.SD), .SDcols = grep("MISC. DTG", colnames(patch_data), value = T)
+	][
+	  , `RENEWABLES` := rowSums(.SD), .SDcols = if ("WIND" %in% colnames(patch_data)) {c("WIND", "SOLAR")} else
+	    {c("WIND OFFSHORE", "WIND ONSHORE", "SOLAR CONCRT.","SOLAR PV", "SOLAR ROOFT", "RENW. 1", "RENW. 2", "RENW. 3", "RENW. 4")}
 	][
 		,
 		.(
@@ -108,8 +99,8 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			PSP,
 
 			Supply = PSP + `MISC. NDG`
-			+ `H. ROR` + WIND + SOLAR
-			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `MISC. DTG`
+			+ `H. ROR` + `RENEWABLES`
+			+ NUCLEAR + LIGNITE + COAL + GAS + OIL + `MIX. FUEL` + `ALL MISC. DTG`
 			+ `H. STOR` - `H. PUMP` + `ROW BAL.`,
 
 			Load = LOAD,
@@ -126,10 +117,11 @@ extract_patch = function(areas, virtual_areas, mcYears = "all",
 			# as.numeric(sapply(Load - Supply - MRG, .pos)),
 			# as.numeric(sapply(Supply + MRG - Load, .pos))
 
-			as.numeric(sapply(Load - Supply - MRG, .pos)),
+			as.numeric(sapply(Load - Supply, .pos)),
 			as.numeric(Supply - Load)
 		)
 	]
+
 	data.table::setnames(patch_data, function(colname){paste("patch", colname, sep=".")})
 
 	patch_data

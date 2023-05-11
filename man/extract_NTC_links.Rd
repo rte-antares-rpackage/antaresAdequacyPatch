@@ -4,13 +4,19 @@
 \alias{extract_NTC_links}
 \title{Extracts the NTC links data from a study and formats the like the flow-based data}
 \usage{
-extract_NTC_links(areas = NULL, sim_opts = antaresRead::simOptions())
+extract_NTC_links(
+  areas = NULL,
+  sim_opts = antaresRead::simOptions(),
+  mcYears = NULL
+)
 }
 \arguments{
 \item{areas}{(string or vector of strings) Areas between which we want to
 extract the links.}
 
 \item{sim_opts}{(list) Simulation options as given by antaresRead::setSimulationPath}
+
+\item{mcYears}{(integer) vector of years to read}
 }
 \value{
 (list) such that $capacity is a data.table containing the maximum
